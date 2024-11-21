@@ -1,0 +1,17 @@
+digraph "Simple Web Service with DB Cluster" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="Simple Web Service with DB Cluster" nodesep=0.60 pad=2.0 rankdir=LR ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	f029205a26b64c0f93cce8002e3bdb16 [label=dns height=1.9 image="/opt/conda/lib/python3.11/site-packages/resources/aws/network/route-53.png" shape=none]
+	d8b181a22cb14faf9a4d62026c89f5c1 [label=service height=1.9 image="/opt/conda/lib/python3.11/site-packages/resources/aws/compute/elastic-container-service.png" shape=none]
+	fb915ce917e445f08ed89d599acd237c -> d71d96d6ee3c4ff7b144ae7808e59b08 [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	fb915ce917e445f08ed89d599acd237c -> "82897026374047bd85032f14c7f5cd25" [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_DB Cluster" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="DB Cluster" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		fb915ce917e445f08ed89d599acd237c [label=primary height=1.9 image="/opt/conda/lib/python3.11/site-packages/resources/aws/database/rds.png" shape=none]
+		d71d96d6ee3c4ff7b144ae7808e59b08 [label=replica1 height=1.9 image="/opt/conda/lib/python3.11/site-packages/resources/aws/database/rds.png" shape=none]
+		"82897026374047bd85032f14c7f5cd25" [label=replica2 height=1.9 image="/opt/conda/lib/python3.11/site-packages/resources/aws/database/rds.png" shape=none]
+	}
+	f029205a26b64c0f93cce8002e3bdb16 -> d8b181a22cb14faf9a4d62026c89f5c1 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d8b181a22cb14faf9a4d62026c89f5c1 -> fb915ce917e445f08ed89d599acd237c [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}
