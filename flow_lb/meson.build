@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022-2024 NVIDIA CORPORATION AND AFFILIATES.  All rights reserved.
+# Copyright (c) 2023-2024 NVIDIA CORPORATION AND AFFILIATES.  All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted
 # provided that the following conditions are met:
@@ -31,7 +31,7 @@ project('DOCA_SAMPLE', 'C', 'CPP',
 	meson_version: '>= 0.61.2'
 )
 
-SAMPLE_NAME = 'flow_modify_header'
+SAMPLE_NAME = 'flow_lb'
 
 # Comment this line to restore warnings of experimental DOCA features
 add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', language: ['c', 'cpp'])
@@ -41,6 +41,8 @@ sample_dependencies = []
 sample_dependencies += dependency('doca-common')
 # The DOCA library of the sample itself
 sample_dependencies += dependency('doca-flow')
+# Additional DOCA library that is relevant for this sample
+sample_dependencies += dependency('doca-dpdk-bridge')
 # Utility DOCA library for executables
 sample_dependencies += dependency('doca-argp')
 # Required DOCA Driver
@@ -52,16 +54,22 @@ sample_srcs = [
 	# Main function for the sample's executable
 	SAMPLE_NAME + '_main.c',
 	# Common code for the DOCA library samples
-	'../flow_common.c',
+	'/opt/mellanox/doca/samples/doca_flow/flow_common.c',
+	# Flow switch common code for the DOCA library samples
+	'/opt/mellanox/doca/samples/doca_flow/flow_switch_common.c',
+	# Common code for all DOCA samples
+	'/opt/mellanox/doca/samples/common.c',
 	# Common code for all DOCA applications
-	'../../../applications/common/dpdk_utils.c',
+	'/opt/mellanox/doca/applications/common/dpdk_utils.c',
 ]
 
 sample_inc_dirs  = []
 # Common DOCA library logic
-sample_inc_dirs += include_directories('..')
+sample_inc_dirs += include_directories('/opt/mellanox/doca/samples/doca_flow')
+# Common DOCA logic (samples)
+sample_inc_dirs += include_directories('/opt/mellanox/doca/samples')
 # Common DOCA logic (applications)
-sample_inc_dirs += include_directories('../../../applications/common/')
+sample_inc_dirs += include_directories('/opt/mellanox/doca/applications/common/')
 
 executable('doca_' + SAMPLE_NAME, sample_srcs,
 	c_args : '-Wno-missing-braces',
