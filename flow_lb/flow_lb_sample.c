@@ -74,6 +74,17 @@ static doca_error_t create_modify_header_pipe(struct doca_flow_port *port,
 	memset(&fwd_miss, 0, sizeof(fwd_miss));
 	memset(&descs, 0, sizeof(descs));
 
+	// monitor.counter_type = DOCA_FLOW_RESOURCE_TYPE_NON_SHARED;
+
+	monitor.counter_type = DOCA_FLOW_RESOURCE_TYPE_SHARED;
+	monitor.shared_counter.shared_counter_id = 0xffffffff;
+	// monitor.meter_type = DOCA_FLOW_RESOURCE_TYPE_NON_SHARED;
+	// monitor.non_shared_meter.cir = 0xffffffffffffffff;
+	// monitor.non_shared_meter.cbs = 0xffffffffffffffff;
+	//monitor.counter_type = DOCA_FLOW_RESOURCE_TYPE_NON_SHARED;
+        //monitor.shared_counter.shared_counter_id = 0;
+  //
+
 	match.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
 	match.outer.ip4.src_ip = 0xffffffff;
 	match.outer.ip4.dst_ip = 0xffffffff;
@@ -104,7 +115,7 @@ static doca_error_t create_modify_header_pipe(struct doca_flow_port *port,
 	//actions.outer.ip4.ttl = UINT8_MAX;
 
 	/* set changeable modify source mac address */
-	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
+	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb5, 0xf4, 0x5a);
 
 	result = doca_flow_pipe_cfg_create(&pipe_cfg, port);
@@ -155,12 +166,14 @@ static doca_error_t add_modify_header_pipe_entry(struct doca_flow_pipe *pipe, st
 {
 	struct doca_flow_match match;
 	struct doca_flow_actions actions;
+	struct doca_flow_monitor monitor;
 	//struct doca_flow_pipe_entry *entry;
 	doca_error_t result;
 	//doca_be32_t dst_ip_addr = BE_IPV4_ADDR(8, 8, 8, 8);
 
 	memset(&match, 0, sizeof(match));
 	memset(&actions, 0, sizeof(actions));
+	memset(&monitor, 0, sizeof(monitor));
 
 	//match.outer.ip4.dst_ip = dst_ip_addr;
 
@@ -168,12 +181,15 @@ static doca_error_t add_modify_header_pipe_entry(struct doca_flow_pipe *pipe, st
 	match.outer.ip4.src_ip = 0xffffffff;
 	match.outer.ip4.dst_ip = 0xffffffff;
 
+	//monitor.meter_type = DOCA_FLOW_RESOURCE_TYPE_SHARED;
+        monitor.shared_counter.shared_counter_id = 0;
+
 	actions.action_idx = 0;
 
 	/* modify source mac address */
-	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb5, 0xf4, 0x5a);
+	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xaa, 0xbb, 0xcc, 0xee, 0xff, 0xdd);
 
-	result = doca_flow_pipe_add_entry(0, pipe, &match, &actions, NULL, NULL, 0, status, &entry);
+	result = doca_flow_pipe_add_entry(0, pipe, &match, &actions, &monitor, NULL, 0, status, &entry);
 	if (result != DOCA_SUCCESS)
 		return result;
 
@@ -193,12 +209,15 @@ doca_error_t flow_modify_header(int nb_queues)
 	uint32_t nr_shared_resources[SHARED_RESOURCE_NUM_VALUES] = {0};
 	struct doca_flow_port *ports[nb_ports];
 	struct doca_dev *dev_arr[nb_ports];
-	struct doca_flow_pipe *pipe, *vxlan_pipe, *vxlan_gpe_pipe;
+	struct doca_flow_pipe *pipe;
 	struct entries_status status;
 	int num_of_entries = 0;
 	doca_error_t result;
-	int port_id;
+	
+	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 1;
 
+	int port_id;
+	struct doca_flow_shared_resource_cfg cfg = {.domain = DOCA_FLOW_PIPE_DOMAIN_DEFAULT};
 	result = init_doca_flow(nb_queues, "vnf,hws", &resource, nr_shared_resources);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to init DOCA Flow: %s", doca_error_get_descr(result));
@@ -223,7 +242,13 @@ doca_error_t flow_modify_header(int nb_queues)
 			doca_flow_destroy();
 			return result;
 		}
-
+		result = doca_flow_shared_resource_set_cfg(DOCA_FLOW_SHARED_RESOURCE_COUNTER, port_id, &cfg);
+		if(result != DOCA_SUCCESS) {
+			DOCA_LOG_ERR("Failed %d", port_id);
+			doca_flow_destroy();
+			return result;
+		}
+		result = doca_flow_shared_resources_bind(DOCA_FLOW_SHARED_RESOURCE_COUNTER, 0, 1, ports[port_id]);
 		result = add_modify_header_pipe_entry(pipe, &status);
 		if (result != DOCA_SUCCESS) {
 			DOCA_LOG_ERR("Failed to add entry: %s", doca_error_get_descr(result));
@@ -249,18 +274,19 @@ doca_error_t flow_modify_header(int nb_queues)
 		}
 	}
 	struct doca_flow_resource_query query_stats;
+	
 	DOCA_LOG_INFO("Wait few seconds for packets to arrive");
 	sleep(5);
-        //result = doca_flow_resource_query_entry(entry, &query_stats);
-        //if (result != DOCA_SUCCESS) {
-        //	DOCA_LOG_ERR("Failed to query entry: %s", doca_error_get_descr(result));
-        //        stop_doca_flow_ports(nb_ports, ports);
-        //       	doca_flow_destroy();
-        //        return result;
-      	//}
-     	//DOCA_LOG_INFO("Entry in index: %d", 0);
-       	//DOCA_LOG_INFO("Total bytes: %ld", query_stats.counter.total_bytes);
-       	//DOCA_LOG_INFO("Total packets: %ld", query_stats.counter.total_pkts);
+        result = doca_flow_resource_query_entry(entry, &query_stats);
+        if (result != DOCA_SUCCESS) {
+        	DOCA_LOG_ERR("Failed to query entry: %s", doca_error_get_descr(result));
+        	stop_doca_flow_ports(nb_ports, ports);
+        	doca_flow_destroy();
+        	return result;
+      	}
+     	DOCA_LOG_INFO("Entry in index: %d", 0);
+       	DOCA_LOG_INFO("Total bytes: %ld", query_stats.counter.total_bytes);
+       	DOCA_LOG_INFO("Total packets: %ld", query_stats.counter.total_pkts);
 
 
 	result = stop_doca_flow_ports(nb_ports, ports);
