@@ -143,7 +143,7 @@ static doca_error_t create_modify_header_pipe(struct doca_flow_port *port,
 	result = doca_flow_pipe_cfg_set_monitor(pipe_cfg, &monitor);
         if (result != DOCA_SUCCESS) {
                 DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg monitor: %s", doca_error_get_descr(result));
-                goto destroy_pipe_cfg;
+        	goto destroy_pipe_cfg;
         }
 
 	result = doca_flow_pipe_create(pipe_cfg, &fwd, NULL, pipe);
@@ -162,13 +162,14 @@ destroy_pipe_cfg:
 
 
 
-static doca_error_t add_modify_header_pipe_entry(struct doca_flow_pipe *pipe, struct entries_status *status)
+static doca_error_t add_modify_header_pipe_entry(struct doca_flow_pipe *pipe, struct entries_status *status, uint32_t counter_id)
 {
 	struct doca_flow_match match;
 	struct doca_flow_actions actions;
 	struct doca_flow_monitor monitor;
 	//struct doca_flow_pipe_entry *entry;
 	doca_error_t result;
+	DOCA_LOG_INFO("Creating entry for port %ld", counter_id);
 	//doca_be32_t dst_ip_addr = BE_IPV4_ADDR(8, 8, 8, 8);
 
 	memset(&match, 0, sizeof(match));
@@ -182,7 +183,7 @@ static doca_error_t add_modify_header_pipe_entry(struct doca_flow_pipe *pipe, st
 	match.outer.ip4.dst_ip = 0xffffffff;
 
 	//monitor.meter_type = DOCA_FLOW_RESOURCE_TYPE_SHARED;
-        monitor.shared_counter.shared_counter_id = 0;
+        monitor.shared_counter.shared_counter_id = counter_id;
 
 	actions.action_idx = 0;
 
@@ -212,9 +213,10 @@ doca_error_t flow_modify_header(int nb_queues)
 	struct doca_flow_pipe *pipe;
 	struct entries_status status;
 	int num_of_entries = 0;
+	uint32_t shared_counter_ids[] = {0, 1};
 	doca_error_t result;
 	
-	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 1;
+	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 2;
 
 	int port_id;
 	struct doca_flow_shared_resource_cfg cfg = {.domain = DOCA_FLOW_PIPE_DOMAIN_DEFAULT};
@@ -248,8 +250,14 @@ doca_error_t flow_modify_header(int nb_queues)
 			doca_flow_destroy();
 			return result;
 		}
-		result = doca_flow_shared_resources_bind(DOCA_FLOW_SHARED_RESOURCE_COUNTER, 0, 1, ports[port_id]);
-		result = add_modify_header_pipe_entry(pipe, &status);
+		result = doca_flow_shared_resources_bind(DOCA_FLOW_SHARED_RESOURCE_COUNTER, &shared_counter_ids[port_id], 1, ports[port_id]);
+		if (result != DOCA_SUCCESS) {
+			DOCA_LOG_ERR("Failed at shared resource bind: %s", doca_error_get_descr(result));
+			stop_doca_flow_ports(nb_ports, ports);
+			doca_flow_destroy();
+			return result;
+		}
+		result = add_modify_header_pipe_entry(pipe, &status, port_id);
 		if (result != DOCA_SUCCESS) {
 			DOCA_LOG_ERR("Failed to add entry: %s", doca_error_get_descr(result));
 			stop_doca_flow_ports(nb_ports, ports);
@@ -274,19 +282,30 @@ doca_error_t flow_modify_header(int nb_queues)
 		}
 	}
 	struct doca_flow_resource_query query_stats;
-	
+	struct doca_flow_resource_query query_results_array[nb_ports];
 	DOCA_LOG_INFO("Wait few seconds for packets to arrive");
 	sleep(5);
-        result = doca_flow_resource_query_entry(entry, &query_stats);
-        if (result != DOCA_SUCCESS) {
-        	DOCA_LOG_ERR("Failed to query entry: %s", doca_error_get_descr(result));
-        	stop_doca_flow_ports(nb_ports, ports);
-        	doca_flow_destroy();
-        	return result;
-      	}
-     	DOCA_LOG_INFO("Entry in index: %d", 0);
-       	DOCA_LOG_INFO("Total bytes: %ld", query_stats.counter.total_bytes);
-       	DOCA_LOG_INFO("Total packets: %ld", query_stats.counter.total_pkts);
+	result = doca_flow_shared_resources_query(DOCA_FLOW_SHARED_RESOURCE_COUNTER, shared_counter_ids, query_results_array, nb_ports);
+       	if (result !=  DOCA_SUCCESS) {
+		DOCA_LOG_ERR("BLA irgendwas mit der shared resource query: %s", doca_error_get_descr(result));
+		stop_doca_flow_ports(nb_ports, ports);
+		doca_flow_destroy();
+		return result;
+	}	
+	for (port_id = 0; port_id < nb_ports; port_id++) {
+		DOCA_LOG_INFO("Port: %d", port_id);
+		DOCA_LOG_INFO("Total packets: %ld", query_results_array[port_id].counter.total_pkts);
+	}
+        //result = doca_flow_resource_query_entry(entry, &query_stats);
+        //if (result != DOCA_SUCCESS) {
+        //	DOCA_LOG_ERR("Failed to query entry: %s", doca_error_get_descr(result));
+        //	stop_doca_flow_ports(nb_ports, ports);
+        //	doca_flow_destroy();
+        //	return result;
+      	//}
+     	//DOCA_LOG_INFO("Entry in index: %d", 0);
+       	//DOCA_LOG_INFO("Total bytes: %ld", query_stats.counter.total_bytes);
+       	//DOCA_LOG_INFO("Total packets: %ld", query_stats.counter.total_pkts);
 
 
 	result = stop_doca_flow_ports(nb_ports, ports);
