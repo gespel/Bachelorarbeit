@@ -178,9 +178,9 @@ static doca_error_t add_modify_header_pipe_entry(struct doca_flow_pipe *pipe, st
 
 	//match.outer.ip4.dst_ip = dst_ip_addr;
 
-	match.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
-	match.outer.ip4.src_ip = 0xffffffff;
-	match.outer.ip4.dst_ip = 0xffffffff;
+	//match.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
+	//match.outer.ip4.src_ip = 0xffffffff;
+	//match.outer.ip4.dst_ip = 0xffffffff;
 
 	//monitor.meter_type = DOCA_FLOW_RESOURCE_TYPE_SHARED;
         monitor.shared_counter.shared_counter_id = counter_id;
