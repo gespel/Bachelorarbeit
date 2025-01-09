@@ -31,10 +31,10 @@
 
 #include <dpdk_utils.h>
 
-DOCA_LOG_REGISTER(FLOW_MODIFY_HEADER::MAIN);
+DOCA_LOG_REGISTER(FLOW_SHARED_COUNTER::MAIN);
 
 /* Sample's Logic */
-doca_error_t flow_modify_header(int nb_queues);
+doca_error_t flow_shared_counter(int nb_queues);
 
 /*
  * Sample main function
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 	struct application_dpdk_config dpdk_config = {
 		.port_config.nb_ports = 2,
 		.port_config.nb_queues = 1,
-		.port_config.nb_hairpin_q = 1,
+		.port_config.nb_hairpin_q = 2,
 	};
 
 	/* Register a logger backend */
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
 	DOCA_LOG_INFO("Starting the sample");
 
-	result = doca_argp_init("doca_flow_modify_header", NULL);
+	result = doca_argp_init("doca_flow_shared_counter", NULL);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to init ARGP resources: %s", doca_error_get_descr(result));
 		goto sample_exit;
@@ -89,9 +89,9 @@ int main(int argc, char **argv)
 	}
 
 	/* run sample */
-	result = flow_modify_header(dpdk_config.port_config.nb_queues);
+	result = flow_shared_counter(dpdk_config.port_config.nb_queues);
 	if (result != DOCA_SUCCESS) {
-		DOCA_LOG_ERR("flow_modify_header() encountered an error: %s", doca_error_get_descr(result));
+		DOCA_LOG_ERR("flow_shared_counter() encountered an error: %s", doca_error_get_descr(result));
 		goto dpdk_ports_queues_cleanup;
 	}
 
