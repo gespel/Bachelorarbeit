@@ -67,9 +67,9 @@ int main(int argc, char **argv)
 	if (result != DOCA_SUCCESS)
 		goto sample_exit;
 
-	DOCA_LOG_INFO("Starting the sample");
+	DOCA_LOG_INFO("Starting the load balancer");
 
-	result = doca_argp_init("doca_flow_shared_counter", NULL);
+	result = doca_argp_init("doca_flow_lb", NULL);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to init ARGP resources: %s", doca_error_get_descr(result));
 		goto sample_exit;

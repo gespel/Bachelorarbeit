@@ -112,8 +112,8 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 	}
 
 	/* forwarding traffic to other port */
-	fwd.type = DOCA_FLOW_FWD_PORT;
-	fwd.port_id = port_id ^ 1;
+	fwd.type = DOCA_FLOW_FWD_DROP;
+	//fwd.port_id = port_id ^ 1;
 
 	result = doca_flow_pipe_create(pipe_cfg, &fwd, NULL, pipe);
 destroy_pipe_cfg:
@@ -299,7 +299,7 @@ doca_error_t flow_shared_counter(int nb_queues)
 	struct doca_flow_shared_resource_cfg cfg = {.domain = DOCA_FLOW_PIPE_DOMAIN_DEFAULT};
 	struct entries_status status;
 	int num_of_entries = 4;
-	doca_error_t result;
+  doca_error_t result;
 
 	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 2;
 
@@ -407,7 +407,7 @@ doca_error_t flow_shared_counter(int nb_queues)
 		}
 	}
 
-	DOCA_LOG_INFO("Wait few seconds for packets to arrive");
+	DOCA_LOG_INFO("Waiting 5 seconds for test packets to load balance...");
 	sleep(5);
   //while(1) {
 	result = doca_flow_shared_resources_query(DOCA_FLOW_SHARED_RESOURCE_COUNTER,
@@ -423,8 +423,8 @@ doca_error_t flow_shared_counter(int nb_queues)
 
 	for (port_id = 0; port_id < nb_ports; port_id++) {
 		DOCA_LOG_INFO("Port %d:", port_id);
-		DOCA_LOG_INFO("Total bytes: %ld", query_results_array[port_id].counter.total_bytes);
-		DOCA_LOG_INFO("Total packets: %ld", query_results_array[port_id].counter.total_pkts);
+		//DOCA_LOG_INFO("Total bytes: %ld", query_results_array[port_id].counter.total_bytes);
+		DOCA_LOG_INFO("packets: %ld", query_results_array[port_id].counter.total_pkts);
 	}
     //sleep(1);
   //}
