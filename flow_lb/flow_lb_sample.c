@@ -154,13 +154,13 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	/* set shared counter ID */
 	monitor.shared_counter.shared_counter_id = shared_counter_id;
 
-  match.outer.ip4.dst_ip = dst_ip_addr;
-  match.outer.ip4.src_ip = src_ip_addr;
+  	match.outer.ip4.dst_ip = dst_ip_addr;
+  	match.outer.ip4.src_ip = src_ip_addr;
 	//match.outer.ip4.dst_ip = 0xffffffff;
 	//match.outer.ip4.src_ip = 0xffffffff;
 	match.outer.l4_type_ext = out_l4_type;
 	SET_L4_PORT(outer, dst_port, dst_port);
-  SET_L4_PORT(outer, src_port, src_port);
+  	SET_L4_PORT(outer, src_port, src_port);
   //SET_L4_PORT(outer, dst_port, 0xffff);
 	//SET_L4_PORT(outer, src_port, 0xffff);
 
@@ -299,7 +299,7 @@ doca_error_t flow_shared_counter(int nb_queues)
 	struct doca_flow_shared_resource_cfg cfg = {.domain = DOCA_FLOW_PIPE_DOMAIN_DEFAULT};
 	struct entries_status status;
 	int num_of_entries = 4;
-  doca_error_t result;
+  	doca_error_t result;
 
 	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 2;
 
