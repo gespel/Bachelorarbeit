@@ -34,7 +34,7 @@
 DOCA_LOG_REGISTER(FLOW_SHARED_COUNTER::MAIN);
 
 /* Sample's Logic */
-doca_error_t flow_shared_counter(int nb_queues);
+doca_error_t flow_lb(int nb_queues);
 
 /*
  * Sample main function
@@ -89,9 +89,9 @@ int main(int argc, char **argv)
 	}
 
 	/* run sample */
-	result = flow_shared_counter(dpdk_config.port_config.nb_queues);
+	result = flow_lb(dpdk_config.port_config.nb_queues);
 	if (result != DOCA_SUCCESS) {
-		DOCA_LOG_ERR("flow_shared_counter() encountered an error: %s", doca_error_get_descr(result));
+		DOCA_LOG_ERR("flow_lb() encountered an error: %s", doca_error_get_descr(result));
 		goto dpdk_ports_queues_cleanup;
 	}
 
