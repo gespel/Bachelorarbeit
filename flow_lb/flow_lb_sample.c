@@ -82,6 +82,7 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 	actions_arr[0] = &actions;
 
 	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
+	actions.outer.ip4.dst_ip = 0xffffffff;
 
 	/* monitor with changeable shared counter ID */
 	monitor.counter_type = DOCA_FLOW_RESOURCE_TYPE_SHARED;
@@ -226,6 +227,7 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 
 	/* example 5-tuple to match */
 	doca_be32_t dst_ip_addr = BE_IPV4_ADDR(10, 3, 10, 50);
+	doca_be32_t new_dst_ip = BE_IPV4_ADDR(10, 3, 10, 43);
 	doca_be32_t src_ip_addr = BE_IPV4_ADDR(1, 2, 3, 4);
 	doca_be16_t dst_port = rte_cpu_to_be_16(80);
 	doca_be16_t src_port = rte_cpu_to_be_16(1234);
@@ -247,6 +249,8 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	actions.action_idx = 0;
 
 	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
+	//actions.action_idx = 1;
+	//actions.outer.ip4.dst_ip = new_dst_ip;
 	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08,0xc0,0xeb,0xa5,0x61,0x26);
 
 	//fwd.type = DOCA_FLOW_FWD_DROP;
