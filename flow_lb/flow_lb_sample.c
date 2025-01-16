@@ -60,6 +60,7 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 						   struct doca_flow_pipe *egress_pipe)
 {
 	struct doca_flow_match match;
+	struct doca_flow_match match_mask;
 	struct doca_flow_monitor monitor;
 	struct doca_flow_actions actions, *actions_arr[1];
 	struct doca_flow_fwd fwd;
@@ -67,17 +68,19 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 	doca_error_t result;
 
 	memset(&match, 0, sizeof(match));
+	memset(&match_mask, 0, sizeof(match_mask));
 	memset(&monitor, 0, sizeof(monitor));
 	memset(&actions, 0, sizeof(actions));
 	memset(&fwd, 0, sizeof(fwd));
 
 	/* 5 tuple match */
-	//match.outer.l4_type_ext = out_l4_type;
   	match.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
+	//match.outer.ip4.src_ip = 0xffffffff;
 	match.outer.ip4.src_ip = 0xffffffff;
-	//match.outer.ip4.dst_ip = 0xffffffff;
-	SET_L4_PORT(outer, src_port, 0xffff);
-	SET_L4_PORT(outer, dst_port, 0xffff);
+	//SET_L4_PORT(outer, src_port, 0xffff);
+	//SET_L4_PORT(outer, dst_port, 0xffff);
+
+	match_mask.outer.ip4.src_ip = 0x1;
 
 	actions_arr[0] = &actions;
 
@@ -99,7 +102,7 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
 		goto destroy_pipe_cfg;
 	}
-	result = doca_flow_pipe_cfg_set_match(pipe_cfg, &match, NULL);
+	result = doca_flow_pipe_cfg_set_match(pipe_cfg, &match, &match_mask);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg match: %s", doca_error_get_descr(result));
 		goto destroy_pipe_cfg;
@@ -114,11 +117,16 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg monitor: %s", doca_error_get_descr(result));
 		goto destroy_pipe_cfg;
 	}
+	/*result = doca_flow_pipe_cfg_set_domain(pipe_cfg, DOCA_FLOW_PIPE_DOMAIN_EGRESS);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg domain: %s", doca_error_get_descr(result));
+		goto destroy_pipe_cfg;
+	}*/
 
 	/* forwarding traffic to other port */
-	//fwd.type = DOCA_FLOW_FWD_DROP;
-	fwd.type = DOCA_FLOW_FWD_PORT;
-	fwd.port_id = 1;
+	fwd.type = DOCA_FLOW_FWD_DROP;
+	//fwd.type = DOCA_FLOW_FWD_PORT;
+	//fwd.port_id = 1;
 	//fwd.type = DOCA_FLOW_FWD_PIPE;
 	//fwd.next_pipe = egress_pipe;
 
@@ -129,80 +137,6 @@ destroy_pipe_cfg:
 	return result;
 }
  
-static doca_error_t create_egress_pipe(struct doca_flow_port *port, struct doca_flow_pipe **pipe) {
-	struct doca_flow_match match;
-	struct doca_flow_monitor monitor;
-	struct doca_flow_fwd fwd;
-	struct doca_flow_pipe_cfg *pipe_cfg;
-	doca_error_t result;
-
-	memset(&match, 0, sizeof(match));
-	memset(&monitor, 0, sizeof(monitor));
-	memset(&fwd, 0, sizeof(fwd));
-
-	result = doca_flow_pipe_cfg_create(&pipe_cfg, port);
-	if (result != DOCA_SUCCESS) {
-		DOCA_LOG_ERR("Failed to create doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
-		return result;
-	}
-
-	result = set_flow_pipe_cfg(pipe_cfg, "Egress Pipe", DOCA_FLOW_PIPE_CONTROL, false);
-	if (result != DOCA_SUCCESS) {
-		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
-		goto destroy_pipe_cfg;
-	}
-
-	/* forwarding traffic to other port */
-	//fwd.type = DOCA_FLOW_FWD_PORT;
-	//fwd.port_id = 1;
-
-	result = doca_flow_pipe_create(pipe_cfg, NULL, NULL, pipe);
-	return DOCA_SUCCESS;
-destroy_pipe_cfg:
-	doca_flow_pipe_cfg_destroy(pipe_cfg);
-	return result;
-}
-
-static doca_error_t add_egress_pipe_entry(struct doca_flow_pipe *egress_pipe, struct entries_status *status) {
-	struct doca_flow_match match;
-	struct doca_flow_fwd fwd;
-	uint8_t priority = 0;
-	doca_error_t result;
-
-	memset(&match, 0, sizeof(match));
-	memset(&fwd, 0, sizeof(fwd));
-
-	match.parser_meta.outer_l3_type = DOCA_FLOW_L3_META_IPV4;
-	match.parser_meta.outer_l4_type = DOCA_FLOW_L4_META_UDP;
-
-	fwd.type = DOCA_FLOW_FWD_PORT;
-	fwd.port_id = 1;
-	//fwd.next_pipe = udp_pipe;
-
-	result = doca_flow_pipe_control_add_entry(0,
-						  priority,
-						  egress_pipe,
-						  &match,
-						  NULL,
-						  NULL,
-						  NULL,
-						  NULL,
-						  NULL,
-						  NULL,
-						  &fwd,
-						  status,
-						  NULL);
-	if (result != DOCA_SUCCESS) {
-		DOCA_LOG_ERR("Failed to add control pipe entry: %s", doca_error_get_descr(result));
-		return result;
-	}
-
-	memset(&match, 0, sizeof(match));
-	memset(&fwd, 0, sizeof(fwd));
-
-	return DOCA_SUCCESS;
-}
-
 /*
  * Add DOCA Flow pipe entry to the shared counter pipe
  *
@@ -241,21 +175,26 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	monitor.shared_counter.shared_counter_id = shared_counter_id;
 
   	//match.outer.ip4.dst_ip = dst_ip_addr;
-  	match.outer.ip4.src_ip = src_ip_addr;
-	match.outer.l4_type_ext = out_l4_type;
-	SET_L4_PORT(outer, dst_port, dst_port);
-  	SET_L4_PORT(outer, src_port, src_port);
+  	//match.outer.ip4.src_ip = src_ip_addr;
+	//match.outer.l4_type_ext = out_l4_type;
+	match.outer.ip4.src_ip = 0xffffffff;
+
+	//match.outer.l4_type_ext = out_l4_type;
+
+	//SET_L4_PORT(outer, dst_port, dst_port);
+  	//SET_L4_PORT(outer, src_port, src_port);
 
 	actions.action_idx = 0;
 
-	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
+	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
 	//actions.action_idx = 1;
-	//actions.outer.ip4.dst_ip = new_dst_ip;
-	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08,0xc0,0xeb,0xa5,0x61,0x26);
+	actions.outer.ip4.dst_ip = new_dst_ip;
+	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08,0xc0,0xeb,0xa5,0x61,0x26);
 
 	//fwd.type = DOCA_FLOW_FWD_DROP;
+	//fwd.type = DOCA_FLOW_FWD_PORT;
 	//fwd.type = DOCA_FLOW_FWD_PIPE;
-	//fwd.port_id = port_id ^ 1;
+	//fwd.port_id = 1;
 	//fwd.next_pipe = egress_pipe;
 
 	result = doca_flow_pipe_add_entry(0, pipe, &match, &actions, &monitor, NULL, 0, status, &entry);
@@ -599,7 +538,7 @@ doca_error_t flow_lb(int nb_queues)
 		}
 		DOCA_LOG_INFO("============================================");
 
-		usleep(100000);
+		usleep(500000);
 		#ifdef CLEAR
 		system("clear");
 		#endif
