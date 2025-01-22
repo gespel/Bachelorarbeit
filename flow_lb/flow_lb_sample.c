@@ -607,7 +607,7 @@ doca_error_t flow_lb(int nb_queues)
 		}
 		DOCA_LOG_INFO("============================================");
 
-		usleep(500000);
+		usleep(50000);
 		#ifdef CLEAR
 		system("clear");
 		#endif
