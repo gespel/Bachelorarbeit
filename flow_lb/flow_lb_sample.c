@@ -254,7 +254,13 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 static doca_error_t create_egress_pipe(struct doca_flow_port *port, struct doca_flow_pipe **pipe)
 {
 	struct doca_flow_pipe_cfg *pipe_cfg;
+	struct doca_flow_monitor monitor;
 	doca_error_t result;
+
+	memset(&monitor, 0, sizeof(monitor));
+
+	monitor.counter_type = DOCA_FLOW_RESOURCE_TYPE_NON_SHARED;
+
 
 	result = doca_flow_pipe_cfg_create(&pipe_cfg, port);
 	if (result != DOCA_SUCCESS) {
@@ -265,6 +271,12 @@ static doca_error_t create_egress_pipe(struct doca_flow_port *port, struct doca_
 	result = set_flow_pipe_cfg(pipe_cfg, "EGRESS_PIPE", DOCA_FLOW_PIPE_BASIC, true);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
+		goto destroy_pipe_cfg;
+	}
+
+	result = doca_flow_pipe_cfg_set_monitor(pipe_cfg, &monitor);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg monitor: %s", doca_error_get_descr(result));
 		goto destroy_pipe_cfg;
 	}
 
