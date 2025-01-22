@@ -91,6 +91,7 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 
 
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
+	SET_MAC_ADDR(actions0.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
 	actions0.outer.ip4.dst_ip = 0xffffffff;
 
@@ -178,7 +179,7 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 
 	/* example 5-tuple to match */
 	doca_be32_t dst_ip_addr = BE_IPV4_ADDR(10, 3, 10, 50);
-	doca_be32_t new_dst_ip = BE_IPV4_ADDR(10, 3, 10, 49);
+	doca_be32_t new_dst_ip = BE_IPV4_ADDR(10, 3, 10, 43);
 	doca_be32_t src_ip_addr = BE_IPV4_ADDR(1, 2, 3, 4);
 	doca_be16_t dst_port = rte_cpu_to_be_16(80);
 	doca_be16_t src_port = rte_cpu_to_be_16(1234);
@@ -199,7 +200,7 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 
 	//match.outer.l4_type_ext = out_l4_type;
 
-	//SET_L4_PORT(outer, dst_port, rte_cpu_to_be_16(80));
+	SET_L4_PORT(outer, dst_port, rte_cpu_to_be_16(80));
 	match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
 	match.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(80);
 
@@ -210,8 +211,11 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
 	//actions.action_idx = 1;
 	//actions.outer.ip4.dst_ip = new_dst_ip;
-	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
-	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08,0xc0,0xeb,0xa5,0x61,0x26);
+	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
+	
+	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08, 0xc0, 0xeb, 0xa5, 0x61, 0x26);
+	//SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
+	SET_MAC_ADDR(actions.outer.eth.src_mac, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 	actions.outer.ip4.dst_ip = new_dst_ip;
 	actions.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
 	actions.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
