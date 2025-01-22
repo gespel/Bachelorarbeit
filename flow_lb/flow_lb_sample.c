@@ -86,8 +86,8 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 	//SET_L4_PORT(outer, dst_port, 0xffff);
 
 	match_mask.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);
-	match_mask.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	match_mask.outer.udp.l4_port.dst_port = 0xffff;
+	//match_mask.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	//match_mask.outer.udp.l4_port.dst_port = 0xffff;
 
 
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
@@ -194,10 +194,10 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
   	//match.outer.ip4.dst_ip = dst_ip_addr;
   	//match.outer.ip4.src_ip = src_ip_addr;
 	//match.outer.l4_type_ext = out_l4_type;
-	match.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 0);
+	match.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);
 	//match.outer.ip4.src_ip = 0x00000001;
 
-	match.outer.l4_type_ext = out_l4_type;
+	//match.outer.l4_type_ext = out_l4_type;
 
 	//SET_L4_PORT(outer, dst_port, rte_cpu_to_be_16(80));
 	match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
@@ -246,6 +246,30 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 
 	return DOCA_SUCCESS;
 }
+
+static doca_error_t create_egress_pipe(struct doca_flow_port *port, struct doca_flow_pipe **pipe)
+{
+	struct doca_flow_pipe_cfg *pipe_cfg;
+	doca_error_t result;
+
+	result = doca_flow_pipe_cfg_create(&pipe_cfg, port);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to create doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
+		return result;
+	}
+
+	result = set_flow_pipe_cfg(pipe_cfg, "EGRESS_PIPE", DOCA_FLOW_PIPE_BASIC, true);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
+		goto destroy_pipe_cfg;
+	}
+
+	result = doca_flow_pipe_create(pipe_cfg, NULL, NULL, pipe);
+destroy_pipe_cfg:
+	doca_flow_pipe_cfg_destroy(pipe_cfg);
+	return result;
+}
+
 
 /*
  * Add DOCA Flow control pipe
