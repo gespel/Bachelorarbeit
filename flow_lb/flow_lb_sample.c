@@ -33,6 +33,8 @@
 
 #include "flow_common.h"
 
+#define CLEAR
+
 DOCA_LOG_REGISTER(FLOW_SHARED_COUNTER);
 
 /* Set match l4 port */
@@ -95,8 +97,8 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 	actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
 	actions0.outer.ip4.dst_ip = 0xffffffff;
 
-	actions0.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	actions0.outer.udp.l4_port.dst_port = 0xffff;
+	//actions0.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	//actions0.outer.udp.l4_port.dst_port = 0xffff;
 
 	//actions_arr[1] = &actions1;
 	actions_arr[0] = &actions0;
@@ -214,11 +216,11 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
 	
 	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08, 0xc0, 0xeb, 0xa5, 0x61, 0x26);
-	//SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
-	SET_MAC_ADDR(actions.outer.eth.src_mac, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
+	//SET_MAC_ADDR(actions.outer.eth.src_mac, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 	actions.outer.ip4.dst_ip = new_dst_ip;
-	actions.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	actions.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
+	//actions.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	//actions.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
 
 
 	result = doca_flow_pipe_add_entry(0, pipe, &match, &actions, &monitor, NULL, 0, status, &entry_mac);
@@ -268,7 +270,7 @@ static doca_error_t create_egress_pipe(struct doca_flow_port *port, struct doca_
 		return result;
 	}
 
-	result = set_flow_pipe_cfg(pipe_cfg, "EGRESS_PIPE", DOCA_FLOW_PIPE_BASIC, true);
+	result = set_flow_pipe_cfg(pipe_cfg, "EGRESS_PIPE", DOCA_FLOW_PIPE_CONTROL, true);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to set doca_flow_pipe_cfg: %s", doca_error_get_descr(result));
 		goto destroy_pipe_cfg;
@@ -284,6 +286,14 @@ static doca_error_t create_egress_pipe(struct doca_flow_port *port, struct doca_
 destroy_pipe_cfg:
 	doca_flow_pipe_cfg_destroy(pipe_cfg);
 	return result;
+}
+
+static doca_error_t create_egress_pipe_entry(struct doca_flow_pipe* pipe, struct entries_status* status) {
+	struct doca_flow_match match;
+
+	memset(&match, 0, sizeof(match));
+
+	return doca_flow_pipe_add_entry(0, pipe, &match, NULL, NULL, NULL, 0, status, NULL);
 }
 
 
@@ -402,7 +412,7 @@ static doca_error_t add_control_pipe_entries(struct doca_flow_pipe *control_pipe
 doca_error_t flow_lb(int nb_queues)
 {
 	int nb_ports = 1;
-	struct flow_resources resource = {0};
+	struct flow_resources resource = {1};
 	uint32_t nr_shared_resources[SHARED_RESOURCE_NUM_VALUES] = {0};
 	//struct doca_flow_port *ports[nb_ports];
 	struct doca_flow_port *ports[2];
@@ -466,6 +476,22 @@ doca_error_t flow_lb(int nb_queues)
 	result = create_shared_counter_pipe(ports[0], 0, DOCA_FLOW_L4_TYPE_EXT_UDP, &udp_pipe, egress_pipe);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to create pipe: %s", doca_error_get_descr(result));
+		stop_doca_flow_ports(nb_ports, ports);
+		doca_flow_destroy();
+		return result;
+	}
+
+	result = create_egress_pipe(ports[1], &egress_pipe);
+	if(result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to create egress pipe!");
+		stop_doca_flow_ports(nb_ports, ports);
+		doca_flow_destroy();
+		return result;
+	}
+
+	result = create_egress_pipe_entry(egress_pipe, &status);
+	if(result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to add entry to egress pipe! %s", doca_error_get_descr(result));
 		stop_doca_flow_ports(nb_ports, ports);
 		doca_flow_destroy();
 		return result;
