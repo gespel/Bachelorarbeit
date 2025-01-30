@@ -1,6 +1,7 @@
 from scapy.all import Ether, IP, UDP, sendp
 import time
 import random
+import multiprocessing
 
 def generate_random_ip():
     return ".".join(str(random.randint(0, 255)) for _ in range(4))
