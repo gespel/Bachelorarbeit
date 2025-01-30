@@ -409,7 +409,7 @@ static doca_error_t add_control_pipe_entries(struct doca_flow_pipe *control_pipe
  * @nb_queues [in]: number of queues the sample will use
  * @return: DOCA_SUCCESS on success and DOCA_ERROR otherwise.
  */
-doca_error_t flow_lb(int nb_queues)
+doca_error_t xeno_flow(int nb_queues)
 {
 	int nb_ports = 1;
 	struct flow_resources resource = {1};

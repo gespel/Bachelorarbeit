@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 	}
 
 	/* run sample */
-	result = flow_lb(dpdk_config.port_config.nb_queues);
+	result = xeno_flow(dpdk_config.port_config.nb_queues);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("flow_lb() encountered an error: %s", doca_error_get_descr(result));
 		goto dpdk_ports_queues_cleanup;

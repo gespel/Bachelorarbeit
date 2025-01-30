@@ -50,9 +50,9 @@ sample_dependencies += dependency('libdpdk')
 
 sample_srcs = [
 	# The sample itself
-	SAMPLE_NAME + '_sample.c',
+	'xeno_flow_core.c',
 	# Main function for the sample's executable
-	SAMPLE_NAME + '_main.c',
+	'xeno_flow_main.c',
 	# Common code for the DOCA library samples
 	'/opt/mellanox/doca/samples/doca_flow/flow_common.c',
 	# Flow switch common code for the DOCA library samples
@@ -71,7 +71,7 @@ sample_inc_dirs += include_directories('/opt/mellanox/doca/samples')
 # Common DOCA logic (applications)
 sample_inc_dirs += include_directories('/opt/mellanox/doca/applications/common/')
 
-executable('doca_' + SAMPLE_NAME, sample_srcs,
+executable('xeno_flow', sample_srcs,
 	c_args : '-Wno-missing-braces',
 	dependencies : sample_dependencies,
 	include_directories: sample_inc_dirs,
