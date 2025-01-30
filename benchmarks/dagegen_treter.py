@@ -12,6 +12,8 @@ def packet_thread():
     p = Ether(src=generate_random_mac(), dst="c4:70:bd:a0:56:ac") / IP(src=generate_random_ip(), dst="10.3.10.50") / UDP(sport=1234, dport=80) 
     while True:
         sendp(p, iface="enp24s0f0np0")
-        time.sleep(0.5)
+        #time.sleep(0.5)
 
-packet_thread()
+processes = [multiprocessing.Process(target=packet_thread) for _ in range(100)]
+
+#packet_thread()
