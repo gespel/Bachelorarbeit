@@ -13,3 +13,5 @@ def packet_thread():
     while True:
         sendp(p, iface="enp24s0f0np0")
         time.sleep(0.5)
+
+packet_thread()
