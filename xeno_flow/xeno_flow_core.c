@@ -229,6 +229,49 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 		return result;
 	}
 
+	memset(&match, 0, sizeof(match));
+	memset(&actions, 0, sizeof(actions));
+	memset(&monitor, 0, sizeof(monitor));
+	memset(&fwd, 0, sizeof(fwd));
+
+	/* set shared counter ID */
+	monitor.shared_counter.shared_counter_id = shared_counter_id;
+
+  	//match.outer.ip4.dst_ip = dst_ip_addr;
+  	//match.outer.ip4.src_ip = src_ip_addr;
+	//match.outer.l4_type_ext = out_l4_type;
+	match.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 0);
+	//match.outer.ip4.src_ip = 0x00000001;
+
+	//match.outer.l4_type_ext = out_l4_type;
+
+	//SET_L4_PORT(outer, dst_port, rte_cpu_to_be_16(80));
+	match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	match.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(80);
+
+  	//SET_L4_PORT(outer, src_port, src_port);
+
+	actions.action_idx = 0;
+
+	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
+	//actions.action_idx = 1;
+	//actions.outer.ip4.dst_ip = new_dst_ip;
+	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb5, 0xf4, 0x5a);
+	
+	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08, 0xc0, 0xeb, 0xa5, 0x61, 0x26);
+	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
+	//SET_MAC_ADDR(actions.outer.eth.src_mac, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+	//actions.outer.ip4.dst_ip = new_dst_ip;
+	//actions.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	//actions.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
+
+
+	result = doca_flow_pipe_add_entry(0, pipe, &match, &actions, &monitor, NULL, 0, status, &entry_mac);
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("Failed to add entry 2: %s", doca_error_get_descr(result));
+		return result;
+	}
+
 	//actions.action_idx = 0;
 
 	
