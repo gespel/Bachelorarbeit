@@ -94,8 +94,8 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	SET_MAC_ADDR(actions0.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
-	actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
-	actions0.outer.ip4.dst_ip = 0xffffffff;
+	//actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
+	//actions0.outer.ip4.dst_ip = 0xffffffff;
 
 	//actions0.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
 	//actions0.outer.udp.l4_port.dst_port = 0xffff;
@@ -218,7 +218,7 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08, 0xc0, 0xeb, 0xa5, 0x61, 0x26);
 	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
 	//SET_MAC_ADDR(actions.outer.eth.src_mac, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-	actions.outer.ip4.dst_ip = new_dst_ip;
+	//actions.outer.ip4.dst_ip = new_dst_ip;
 	//actions.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
 	//actions.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
 
@@ -638,16 +638,14 @@ doca_error_t flow_lb(int nb_queues)
 			return result;
 		}
 
-		for (port_id = 0; port_id < 2; port_id++) {
-			DOCA_LOG_INFO("Port %d:", port_id);
-			DOCA_LOG_INFO("\tpackets: %ld", query_results_array[port_id].counter.total_pkts);
-			DOCA_LOG_INFO("\tbytes: %ld", query_results_array[port_id].counter.total_bytes);
-		}
+		DOCA_LOG_INFO("Loadbalancer stats:");
+		DOCA_LOG_INFO("\tpacket_count: %ld", query_results_array[port_id].counter.total_pkts);
+		DOCA_LOG_INFO("\toverall_bytes: %ld", query_results_array[port_id].counter.total_bytes);
 		DOCA_LOG_INFO("============================================");
 
 		usleep(50000);
 		#ifdef CLEAR
-		system("clear");
+		//system("clear");
 		#endif
 	}
 
