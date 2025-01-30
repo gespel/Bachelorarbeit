@@ -15,6 +15,9 @@ def packet_thread():
         sendp(p, iface="enp24s0f0np0")
         #time.sleep(0.5)
 
-processes = [multiprocessing.Process(target=packet_thread) for _ in range(100)]
+processes = [multiprocessing.Process(target=packet_thread) for _ in range(20)]
+
+for process in processes:
+    process.start()
 
 #packet_thread()
