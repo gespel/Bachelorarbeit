@@ -7,7 +7,7 @@
 #include <doca_flow.h>
 
 #include "flow_common.h"
-//#include "cJSON.h"
+#include <cjson/cJSON.h>
 
 #define CLEAR
 

@@ -32,9 +32,12 @@ project('DOCA_SAMPLE', 'C', 'CPP',
 )
 
 SAMPLE_NAME = 'flow_lb'
+cc = meson.get_compiler('c')  # Compiler-Variable definieren
 
 # Comment this line to restore warnings of experimental DOCA features
 add_project_arguments('-D DOCA_ALLOW_EXPERIMENTAL_API', language: ['c', 'cpp'])
+add_project_arguments('-I/usr/local/include/cjson', language: 'c')
+
 
 sample_dependencies = []
 # Required for all DOCA programs
@@ -47,8 +50,8 @@ sample_dependencies += dependency('doca-dpdk-bridge')
 sample_dependencies += dependency('doca-argp')
 # Required DOCA Driver
 sample_dependencies += dependency('libdpdk')
-#cjson_dep = dependency('cjson', required: true)
-#sample_dependencies += cjson_dep
+cjson_dep = cc.find_library('cjson', required: true)
+sample_dependencies += cjson_dep
 
 sample_srcs = [
 	# The sample itself
