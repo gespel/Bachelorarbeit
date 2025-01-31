@@ -1,0 +1,13 @@
+{
+    "backends": [
+        {
+            "name": "fips1",
+            "mac_address": ""
+        },
+        {
+            "name": "fips2",
+            "mac_address": ""
+        }
+    ]
+    
+}

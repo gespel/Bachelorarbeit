@@ -47,6 +47,8 @@ sample_dependencies += dependency('doca-dpdk-bridge')
 sample_dependencies += dependency('doca-argp')
 # Required DOCA Driver
 sample_dependencies += dependency('libdpdk')
+#cjson_dep = dependency('cjson', required: true)
+#sample_dependencies += cjson_dep
 
 sample_srcs = [
 	# The sample itself
