@@ -292,6 +292,48 @@ static doca_error_t add_control_pipe_entries(struct doca_flow_pipe *control_pipe
 }
 
 void load_config() {
+	FILE *file = fopen("backends.json", "rb");
+    if (!file) {
+        perror("Fehler beim Öffnen der Datei");
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *content = malloc(length + 1);
+    if (!content) {
+        perror("Speicherzuweisung fehlgeschlagen");
+        fclose(file);
+        return NULL;
+    }
+
+    fread(content, 1, length, file);
+    content[length] = '\0';
+    fclose(file);
+
+	cJSON *json = cJSON_Parse(content);
+    if (!json) {
+        printf("Fehler beim Parsen: %s\n", cJSON_GetErrorPtr());
+        return 0;
+    }
+	printf("%s\n", cJSON_Print(json));
+
+    cJSON *server = cJSON_GetObjectItem(json, "backends");
+	if(cJSON_GetArraySize(server) == 0) {
+		DOCA_LOG_ERR("No backends found in backends.json!");
+		exit(-1);
+	}
+	cJSON* name = NULL;
+  	cJSON* backend_mac = NULL;
+	for (int i = 0 ; i < cJSON_GetArraySize(server) ; i++) {
+     	cJSON * subitem = cJSON_GetArrayItem(server, i);
+     	name = cJSON_GetObjectItem(subitem, "name");
+     	backend_mac = cJSON_GetObjectItem(subitem, "mac_address");
+		DOCA_LOG_INFO("%s -> %s", name->valuestring, backend_mac->valuestring);
+  	}
+	
 	
 }
 
@@ -315,7 +357,7 @@ doca_error_t xeno_flow(int nb_queues)
 
 	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 2;
 
-
+	load_config();
 
 
 	result = init_doca_flow(nb_queues, "vnf,hws", &resource, nr_shared_resources);

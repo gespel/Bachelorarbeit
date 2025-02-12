@@ -2,12 +2,11 @@
     "backends": [
         {
             "name": "fips1",
-            "mac_address": ""
+            "mac_address": "aa:bb:cc:dd:ee:ff"
         },
         {
             "name": "fips2",
-            "mac_address": ""
+            "mac_address": "11:22:33:44:55:66"
         }
-    ]
-    
+    ] 
 }
