@@ -22,8 +22,13 @@ DOCA_LOG_REGISTER(FLOW_SHARED_COUNTER);
 			match.layer.udp.l4_port.port = (value); \
 	} while (0)
 
-void doca_try(doca_error_t result) {
-
+void doca_try(doca_error_t result, char* message, int nb_ports, struct doca_flow_port** ports) {
+	if (result != DOCA_SUCCESS) {
+		DOCA_LOG_ERR("%s: %s", message, doca_error_get_descr(result));
+		stop_doca_flow_ports(nb_ports, ports);
+		doca_flow_destroy();
+		exit(-1);
+	}
 }
 
 static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
@@ -403,15 +408,15 @@ doca_error_t xeno_flow(int nb_queues)
 	XenoFlowConfig *config = load_config();
 	DOCA_LOG_INFO("Number of backends: %d", config->numBackends);
 
-	result = init_doca_flow(nb_queues, "vnf,hws", &resource, nr_shared_resources);
+	/*result = init_doca_flow(nb_queues, "vnf,hws", &resource, nr_shared_resources);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to init DOCA Flow: %s", doca_error_get_descr(result));
 		return result;
-	}
+	}*/
+	doca_try(init_doca_flow(nb_queues, "vnf,hws", &resource, nr_shared_resources), "Failed to init DOCA Flow", nb_ports, ports);
 
-	//memset(dev_arr, 0, sizeof(struct doca_dev *) * nb_ports);
 	memset(dev_arr, 0, sizeof(struct doca_dev *) * 1);
-	//result = init_doca_flow_ports(nb_ports, ports, true, dev_arr);
+	
 	result = init_doca_flow_ports(2, ports, true, dev_arr);
 	if (result != DOCA_SUCCESS) {
 		DOCA_LOG_ERR("Failed to init DOCA ports: %s", doca_error_get_descr(result));
