@@ -295,7 +295,43 @@ static doca_error_t add_control_pipe_entries(struct doca_flow_pipe *control_pipe
 	return DOCA_SUCCESS;
 }
 
-void load_config() {
+typedef struct xfb
+{
+	char* name;
+	char* mac;
+
+} XenoFlowBackend;
+
+typedef struct xfc {
+	int numBackends;
+	XenoFlowBackend** backends;
+} XenoFlowConfig;
+
+XenoFlowBackend* createBackend(char* name, char* mac) {
+	XenoFlowBackend* out = malloc(sizeof(XenoFlowBackend));
+	
+	out->name = name;
+	out->mac = mac;
+	
+	return out; 
+}
+
+XenoFlowConfig* createConfig() {
+	XenoFlowConfig* config = malloc(sizeof(XenoFlowConfig));
+	
+	config->numBackends = 0;
+	config->backends = malloc(sizeof(XenoFlowBackend) * 128);
+	
+	return config;
+}
+
+void configAddBackend(XenoFlowConfig* config, XenoFlowBackend* backend) {
+	config->backends[config->numBackends] = backend;
+	config->numBackends += 1;
+}
+
+
+XenoFlowConfig* load_config() {
 	FILE *file = fopen("backends.json", "rb");
     if (!file) {
         perror("Fehler beim Öffnen der Datei");
@@ -331,14 +367,17 @@ void load_config() {
 	}
 	cJSON* name = NULL;
   	cJSON* backend_mac = NULL;
+	XenoFlowConfig* c = createConfig();
 	for (int i = 0 ; i < cJSON_GetArraySize(server) ; i++) {
      	cJSON * subitem = cJSON_GetArrayItem(server, i);
      	name = cJSON_GetObjectItem(subitem, "name");
      	backend_mac = cJSON_GetObjectItem(subitem, "mac_address");
 		DOCA_LOG_INFO("%s -> %s", name->valuestring, backend_mac->valuestring);
+		XenoFlowBackend* b = createBackend(name->valuestring, backend_mac->valuestring);
+		configAddBackend(c, b);
   	}
 	usleep(3000000);
-	
+	return c;
 }
 
 doca_error_t xeno_flow(int nb_queues)
@@ -361,8 +400,8 @@ doca_error_t xeno_flow(int nb_queues)
 
 	nr_shared_resources[DOCA_FLOW_SHARED_RESOURCE_COUNTER] = 2;
 
-	load_config();
-
+	XenoFlowConfig *config = load_config();
+	DOCA_LOG_INFO("Number of backends: %d", config->numBackends);
 
 	result = init_doca_flow(nb_queues, "vnf,hws", &resource, nr_shared_resources);
 	if (result != DOCA_SUCCESS) {
