@@ -9,7 +9,7 @@
 #include "flow_common.h"
 #include <cjson/cJSON.h>
 
-#define CLEAR
+//#define CLEAR
 
 DOCA_LOG_REGISTER(FLOW_SHARED_COUNTER);
 
@@ -21,6 +21,10 @@ DOCA_LOG_REGISTER(FLOW_SHARED_COUNTER);
 		else if (match.layer.l4_type_ext == DOCA_FLOW_L4_TYPE_EXT_UDP) \
 			match.layer.udp.l4_port.port = (value); \
 	} while (0)
+
+void doca_try(doca_error_t result) {
+
+}
 
 static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 					       int port_id,
@@ -333,7 +337,7 @@ void load_config() {
      	backend_mac = cJSON_GetObjectItem(subitem, "mac_address");
 		DOCA_LOG_INFO("%s -> %s", name->valuestring, backend_mac->valuestring);
   	}
-	
+	usleep(3000000);
 	
 }
 
@@ -465,9 +469,9 @@ doca_error_t xeno_flow(int nb_queues)
 		DOCA_LOG_INFO("\toverall_bytes: %ld", query_results_array[port_id].counter.total_bytes);
 		DOCA_LOG_INFO("============================================");
 
-		usleep(50000);
+		usleep(500000);
 		#ifdef CLEAR
-		//system("clear");
+		system("clear");
 		#endif
 	}
 
