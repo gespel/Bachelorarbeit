@@ -58,14 +58,14 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 	//match.outer.ip4.src_ip = 0xffffffff;
 	match.outer.ip4.src_ip = BE_IPV4_ADDR(255, 255, 255, 255);
 	//match.outer.ip4.dst_ip = BE_IPV4_ADDR(255, 255, 255, 255);
-	match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	//match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
 	//match.outer.udp.l4_port.dst_port = 0xffff;
-	SET_L4_PORT(outer, dst_port, 0xffff);
+	//SET_L4_PORT(outer, dst_port, 0xffff);
 	//SET_L4_PORT(outer, dst_port, 0xffff);
 
 	match_mask.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);
 	//match_mask.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	match_mask.outer.udp.l4_port.dst_port = 0xffff;
+	//match_mask.outer.udp.l4_port.dst_port = 0xffff;
 
 
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
@@ -154,8 +154,8 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	monitor.shared_counter.shared_counter_id = shared_counter_id;
 
 	match.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);	
-	match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	match.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
+	//match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
+	//match.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
 
 	actions.action_idx = 0;
 
