@@ -59,13 +59,10 @@ static doca_error_t create_shared_counter_pipe(struct doca_flow_port *port,
 
 	match_mask.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);
 
-
-
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	SET_MAC_ADDR(actions0.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	//actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
 	//actions0.outer.ip4.dst_ip = 0xffffffff;
-
 
 	actions_arr[0] = &actions0;
 
@@ -294,10 +291,6 @@ doca_error_t xeno_flow(int nb_queues)
 	doca_try(create_shared_counter_pipe(ports[0], 0, DOCA_FLOW_L4_TYPE_EXT_UDP, &udp_pipe), "Failed to create pipe", nb_ports, ports);
 
 	doca_try(add_shared_counter_pipe_entry(udp_pipe, DOCA_FLOW_L4_TYPE_EXT_UDP, shared_counter_ids[0], &status), "Failed to add entry", nb_ports, ports);
-
-	//doca_try(create_control_pipe(ports[0], &pipe), "Failed to create control pipe", nb_ports, ports);
-
-	//doca_try(add_control_pipe_entries(pipe, udp_pipe, &status), "Error adding control pipe entries", nb_ports, ports);
 
 	doca_try(doca_flow_entries_process(ports[0], 0, DEFAULT_TIMEOUT_US, num_of_entries), "Failed to process entries", nb_ports, ports);
 
