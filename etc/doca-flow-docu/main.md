@@ -6,4 +6,4 @@ DOCA Flow is the API Nvidia made in order to make use of the proclaimed hardware
 
 ## Syntax
 The DOCA header provides us most function names and data structure that can be used. The problem is that the function definitions are hidden from us in the form of precompiled libraries. So in order to understand most of the functionality the only tool left to us is brute force and starring at the code. Most functions start with
-`doca_flow_*`
+`doca_flow_*` together with the functionname.

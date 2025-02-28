@@ -43,6 +43,16 @@ doca_error_t flow_lb(int nb_queues);
  * @argv [in]: array of command line arguments
  * @return: EXIT_SUCCESS on success and EXIT_FAILURE otherwise
  */
+
+ void *xeno_flow_wrapper(void *arg) {
+    int nb_queues = *(int *)arg;
+    doca_error_t result = xeno_flow(nb_queues);
+    if (result != DOCA_SUCCESS) {
+        DOCA_LOG_ERR("xeno_flow encountered an error: %s", doca_error_get_descr(result));
+    }
+    return NULL;
+}
+
 int main(int argc, char **argv)
 {
 	doca_error_t result;
@@ -50,7 +60,7 @@ int main(int argc, char **argv)
 	int exit_status = EXIT_FAILURE;
 	struct application_dpdk_config dpdk_config = {
 		.port_config.nb_ports = 2,
-		.port_config.nb_queues = 1,
+		.port_config.nb_queues = 4,
 		.port_config.nb_hairpin_q = 2,
 	};
 
@@ -58,7 +68,6 @@ int main(int argc, char **argv)
 	result = doca_log_backend_create_standard();
 	if (result != DOCA_SUCCESS)
 		goto sample_exit;
-
 	/* Register a logger backend for internal SDK errors and warnings */
 	result = doca_log_backend_create_with_file_sdk(stderr, &sdk_log);
 	if (result != DOCA_SUCCESS)
