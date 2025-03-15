@@ -386,16 +386,21 @@ doca_error_t xeno_flow(int nb_queues)
 			doca_flow_destroy();
 			return result;
 		}
+
+
 		gettimeofday(&t2, NULL);
 		numPacketsNew = query_results_array[port_id].counter.total_pkts;
 		numBytesNew = query_results_array[port_id].counter.total_bytes;
+
 		int diff = numPacketsNew - numPacketsOld;
 		int diffBytes = numBytesNew - numBytesOld;
 		double diffGigaBytes = (double)diffBytes / (1024.0*1024.0*1024.0);
 		elapsedTime = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0;
+
 		t1 = t2;
 		numPacketsOld = numPacketsNew;
 		numBytesOld = numBytesNew;
+
 		DOCA_LOG_INFO("Loadbalancer stats:");
 		DOCA_LOG_INFO("\tpacket_count: \t%ld", query_results_array[port_id].counter.total_pkts);
 		DOCA_LOG_INFO("\toverall_bytes: \t%ld", query_results_array[port_id].counter.total_bytes);
