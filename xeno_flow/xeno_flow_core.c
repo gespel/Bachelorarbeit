@@ -124,6 +124,7 @@ static doca_error_t create_root_pipe(struct doca_flow_port *port,
 	match.outer.ip4.src_ip = BE_IPV4_ADDR(255, 255, 255, 255);
 
 	match_mask.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);
+	DOCA_LOG_INFO("%d", match_mask.outer.ip4.src_ip);
 
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	SET_MAC_ADDR(actions0.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
@@ -393,8 +394,7 @@ doca_error_t xeno_flow(int nb_queues)
 		numBytesNew = query_results_array[port_id].counter.total_bytes;
 
 		int diff = numPacketsNew - numPacketsOld;
-		int diffBytes = numBytesNew - numBytesOld;
-		double diffGigaBytes = (double)diffBytes / (1024.0*1024.0*1024.0);
+		int diffBytes = numBytesNew - numBytesOld;;
 		elapsedTime = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) / 1000000.0;
 
 		t1 = t2;
@@ -405,7 +405,7 @@ doca_error_t xeno_flow(int nb_queues)
 		DOCA_LOG_INFO("\tpacket_count: \t%ld", query_results_array[port_id].counter.total_pkts);
 		DOCA_LOG_INFO("\toverall_bytes: \t%ld", query_results_array[port_id].counter.total_bytes);
 		DOCA_LOG_INFO("\tpackets/s: \t%.0f", ((double)diff/elapsedTime));
-		DOCA_LOG_INFO("\tGB/s: \t\t%.3f", ((double)(diffGigaBytes)/elapsedTime));
+		DOCA_LOG_INFO("\tBytes/s: \t%.3f", ((double)(diffBytes)/elapsedTime));
 		DOCA_LOG_INFO("============================================");
 		usleep(statRefreshIntervall);
 		#ifdef CLEAR
