@@ -18,7 +18,7 @@ class STLS1(object):
     def create_stream1 (self,pps):
         payload = ""
         # Ethernet(14) + IP(20) + UDP(8) = 42 bytes
-        for x in range(0, 22):
+        for x in range(0, 86):
             payload += "x"
         pkt =  Ether()/IP(src=SRC_IP,dst=DEST_IP,id=1,tos=0)/UDP(sport=SRC_PORT,dport=DEST_PORT)/(payload.encode("ascii"))
         vm = STLScVmRaw([STLVmFlowVar("ip_src", min_value=VALID_IP_RANGE[0],max_value=VALID_IP_RANGE[1], size=4, step=1,op="inc"),
