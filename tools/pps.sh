@@ -1,5 +1,5 @@
 #!/bin/bash
-IFACE=eth0
+IFACE=ens1f0np0
 INTERVAL=1
 
 while true; do
