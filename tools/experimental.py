@@ -25,7 +25,7 @@ def packet_callback(pkt):
         response_queue.put(pkt)
 
 def start_sniffer():
-    sniff(iface=INTERFACE, filter=f"udp and src port {TARGET_PORT} and dst port {SPORT}", prn=packet_callback, store=0)
+    sniff(iface=INTERFACE, filter="udp and src port 5353", prn=packet_callback, store=0)
 
 def send_dns_request(domain):
     dns_request = DNS(id=DNS_TXID, rd=1, qd=DNSQR(qname=domain))
