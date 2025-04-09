@@ -26,7 +26,9 @@ def send_dns_request(domain):
 if __name__ == "__main__":
     while(1):
         domain = random.choice(QUERY_DOMAINS)
-        print(f"[Sender] Sende Anfrage für {domain} | time: {time.time()}")
         start = time.time()
         send_dns_request(domain)
+        print(f"[Sender] Sende Anfrage für {domain} | time: {start}")
         time.sleep(1)
+        with open("rtt.txt", "a") as f:
+            f.write("s-" + str(start))
