@@ -1,6 +1,7 @@
+import socket
 import time
 import random
-from scapy.all import DNS, DNSQR, Ether, IP, UDP, sendp, get_if_hwaddr, sniff
+from scapy.all import DNS, DNSQR, Ether, IP, UDP, sendp, get_if_hwaddr
 
 INTERFACE = "enp24s0f0np0"
 TARGET_MAC = "c4:70:bd:a0:56:ac"
@@ -10,40 +11,51 @@ SOURCE_IP = "10.3.10.42"
 TARGET_PORT = 53
 
 QUERY_DOMAINS = ["example.local.", "example.org.", "test.local."]
-NUM_MEASUREMENTS = 100000
+NUM_MEASUREMENTS = 1000
 
 def send_and_receive():
     domain = random.choice(QUERY_DOMAINS)
     transaction_id = random.randint(0, 0xFFFF)
+    sport = random.randint(1024, 65535)
 
     dns_request = DNS(id=transaction_id, rd=1, qd=DNSQR(qname=domain))
 
     ether = Ether(src=SOURCE_MAC, dst=TARGET_MAC)
     ip = IP(src=SOURCE_IP, dst=TARGET_IP)
-    sport = random.randint(1024, 65535)
     udp = UDP(sport=sport, dport=TARGET_PORT)
     packet = ether / ip / udp / dns_request
+
+    # UDP-Socket für Empfang öffnen
+    recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    recv_sock.bind((SOURCE_IP, sport))
+    recv_sock.settimeout(2)
 
     start = time.time()
     sendp(packet, iface=INTERFACE, verbose=0)
 
-    response = sniff(
-        iface=INTERFACE,
-        filter="udp port 5353",
-        timeout=2,
-        count=1
-    )
-
-    if response:
-        dns_resp = response[0][DNS]
+    try:
+        data, addr = recv_sock.recvfrom(512)
         rtt_ms = (time.time() - start) * 1000
-        assert dns_resp.id == transaction_id
-        dns_resp = response[0][DNS]
-        print(f"{domain} -> Antwort: {dns_resp.an.rdata} | RTT: {rtt_ms:.2f} ms")
+
+        dns_resp = DNS(data)
+        if dns_resp.id != transaction_id:
+            print(f"Transaction ID stimmt nicht: {dns_resp.id} != {transaction_id}")
+            return None
+
+        if dns_resp.an:
+            print(f"{domain} -> Antwort: {dns_resp.an.rdata} | RTT: {rtt_ms:.2f} ms")
+        else:
+            print(f"{domain} -> Leere Antwort | RTT: {rtt_ms:.2f} ms")
+
         return rtt_ms
-    else:
-        print(f"{domain} -> Keine Antwort erhalten.")
+
+    except socket.timeout:
+        print(f"{domain} -> Timeout")
         return None
+
+    finally:
+        recv_sock.close()
+
 
 all_rtts = []
 for _ in range(NUM_MEASUREMENTS):
