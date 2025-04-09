@@ -13,12 +13,12 @@ def match_packet(pkt):
     )
 
 print(f"[Receiver] Warte auf DNS-Antwort auf Interface {INTERFACE} ...")
+while True:
+    pkt = sniff(iface=INTERFACE, lfilter=match_packet, timeout=2, count=1)
 
-pkt = sniff(iface=INTERFACE, lfilter=match_packet, timeout=2, count=1)
-
-if pkt:
-    #rtt_ms = (time.time() - sent_time) * 1000
-    dns_resp = pkt[0][DNS]
-    print(f"[Receiver] Antwort empfangen: {dns_resp.an.rdata} | time: {time.time()}")
-else:
-    print("[Receiver] Keine Antwort empfangen.")
+    if pkt:
+        #rtt_ms = (time.time() - sent_time) * 1000
+        dns_resp = pkt[0][DNS]
+        print(f"[Receiver] Antwort empfangen: {dns_resp.an.rdata} | time: {time.time()}")
+    else:
+        print("[Receiver] Keine Antwort empfangen.")
