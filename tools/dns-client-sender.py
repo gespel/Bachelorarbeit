@@ -24,7 +24,9 @@ def send_dns_request(domain):
     sendp(packet, iface=INTERFACE, verbose=0)
 
 if __name__ == "__main__":
-    domain = random.choice(QUERY_DOMAINS)
-    print(f"[Sender] Sende Anfrage für {domain}")
-    start = time.time()
-    send_dns_request(domain)
+    while(1):
+        domain = random.choice(QUERY_DOMAINS)
+        print(f"[Sender] Sende Anfrage für {domain}")
+        start = time.time()
+        send_dns_request(domain)
+        time.sleep(1)
