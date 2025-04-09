@@ -15,6 +15,6 @@ while True:
         time_2 = l2[1]
 
         if type_1 == "s" and type_2 == "r":
-            print(f"RTT: {(time_2 - time_1) * 1000} ms")
+            print(f"RTT: {(float(time_2) - float(time_1)) * 1000} ms")
     time.sleep(1)
 
