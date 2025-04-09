@@ -20,8 +20,8 @@ def send_dns_request(domain):
     ip = IP(src=SOURCE_IP, dst=TARGET_IP)
     udp = UDP(sport=SPORT, dport=TARGET_PORT)
     packet = ether / ip / udp / dns_request
-    out = time.perf_counter()
     sendp(packet, iface=INTERFACE, verbose=0)
+    out = time.perf_counter()
     return out
 
 if __name__ == "__main__":
