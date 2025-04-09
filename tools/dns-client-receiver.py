@@ -11,5 +11,8 @@ while True:
     t = time.time()
     with open("rtt.txt", "a") as f:
         f.write(f"r-{t}\n")
-    dns_resp = pkt[0][DNS]
+    try:
+        dns_resp = pkt[0][DNS]
+    except Exception as e:
+        print(f"Error {pkt}")
     print(f"[Receiver] Antwort empfangen: {dns_resp.an.rdata} | time: {t}")
