@@ -16,7 +16,7 @@ TARGET_PORT = 53
 
 QUERY_DOMAINS = ["example.local.", "example.org.", "test.local."]
 DNS_TXID = 0x1234
-SPORT = 44444
+SPORT = 5353
 
 response_queue = Queue()
 
