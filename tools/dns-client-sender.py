@@ -29,6 +29,7 @@ if __name__ == "__main__":
         start = time.time()
         send_dns_request(domain)
         print(f"[Sender] Sende Anfrage für {domain} | time: {start}")
-        time.sleep(1)
         with open("rtt.txt", "a") as f:
             f.write(f"s-{start}\n")
+        time.sleep(1)
+        
