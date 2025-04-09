@@ -1,8 +1,9 @@
 import time
 import random
+from threading import Thread
+from queue import Queue, Empty
 from scapy.all import (
-    DNS, DNSQR, DNSRR,
-    Ether, IP, UDP,
+    DNS, DNSQR, Ether, IP, UDP,
     sendp, sniff, get_if_hwaddr
 )
 
@@ -14,9 +15,17 @@ SOURCE_IP = "10.3.10.42"
 TARGET_PORT = 53
 
 QUERY_DOMAINS = ["example.local.", "example.org.", "test.local."]
+DNS_TXID = 0x1234
+SPORT = 44444
 
-DNS_TXID = 0x1234  # feste ID
-SPORT = 44444      # feste Source-Port
+response_queue = Queue()
+
+def packet_callback(pkt):
+    if DNS in pkt and pkt[UDP].sport == TARGET_PORT and pkt[UDP].dport == SPORT:
+        response_queue.put(pkt)
+
+def start_sniffer():
+    sniff(iface=INTERFACE, filter=f"udp and src port {TARGET_PORT} and dst port {SPORT}", prn=packet_callback, store=0)
 
 def send_dns_request(domain):
     dns_request = DNS(id=DNS_TXID, rd=1, qd=DNSQR(qname=domain))
@@ -27,33 +36,27 @@ def send_dns_request(domain):
 
     sendp(packet, iface=INTERFACE, verbose=0)
 
-def wait_for_response(timeout=2):
-    pkt = sniff(
-        iface=INTERFACE,
-        filter=f"udp and port {SPORT}",
-        timeout=timeout,
-        count=1
-    )
-    return pkt[0] if pkt else None
-
 if __name__ == "__main__":
+    sniffer_thread = Thread(target=start_sniffer, daemon=True)
+    sniffer_thread.start()
+
     while True:
         domain = random.choice(QUERY_DOMAINS)
         print(f"[Sender] Sende Anfrage für {domain}")
         start = time.time()
         send_dns_request(domain)
 
-        pkt = wait_for_response(timeout=2)
-        end = time.time()
+        try:
+            pkt = response_queue.get(timeout=2)
+            end = time.time()
 
-        if pkt and DNS in pkt:
             dns_resp = pkt[DNS]
             if dns_resp.an:
                 rtt_ms = (end - start) * 1000
                 print(f"[Empfangen] Antwort: {dns_resp.an.rdata} | RTT: {rtt_ms:.2f} ms")
             else:
                 print("[Empfangen] Keine Antwortdaten im DNS enthalten.")
-        else:
-            print("[Empfangen] Keine Antwort empfangen.")
+        except Empty:
+            print("[Empfangen] Timeout – keine Antwort erhalten.")
 
         time.sleep(1)
