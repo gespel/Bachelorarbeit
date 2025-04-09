@@ -47,7 +47,7 @@ if __name__ == "__main__":
         send_dns_request(domain)
 
         try:
-            pkt = response_queue.get(timeout=2)
+            pkt = response_queue.get(timeout=1)
             end = time.time()
 
             dns_resp = pkt[DNS]

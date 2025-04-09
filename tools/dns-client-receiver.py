@@ -7,7 +7,7 @@ print(f"[Receiver] Warte auf DNS-Antwort auf Interface {INTERFACE} ...")
 while True:
     pkt = sniff(iface=INTERFACE, filter="udp port 5353", timeout=2, count=1)
 
-    t = time.time()
+    t = time.perf_counter()
     if pkt:
         with open("rtt.txt", "a") as f:
             f.write(f"r-{t}\n")
