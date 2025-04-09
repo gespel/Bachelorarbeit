@@ -10,6 +10,6 @@ while True:
 
     t = time.time()
     with open("rtt.txt", "a") as f:
-        f.write("r-" + str(t))
+        f.write(f"r-{t}\n")
     dns_resp = pkt[0][DNS]
     print(f"[Receiver] Antwort empfangen: {dns_resp.an.rdata} | time: {t}")

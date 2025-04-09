@@ -31,4 +31,4 @@ if __name__ == "__main__":
         print(f"[Sender] Sende Anfrage für {domain} | time: {start}")
         time.sleep(1)
         with open("rtt.txt", "a") as f:
-            f.write("s-" + str(start))
+            f.write(f"s-{start}\n")
