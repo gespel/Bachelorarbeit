@@ -26,7 +26,7 @@ def send_dns_request(domain):
 if __name__ == "__main__":
     while(1):
         domain = random.choice(QUERY_DOMAINS)
-        print(f"[Sender] Sende Anfrage für {domain}")
+        print(f"[Sender] Sende Anfrage für {domain} | time: {time.time()}")
         start = time.time()
         send_dns_request(domain)
         time.sleep(1)
