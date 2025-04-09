@@ -3,14 +3,14 @@ import random
 from scapy.all import DNS, DNSQR, Ether, IP, UDP, sendp, get_if_hwaddr, sniff
 
 INTERFACE = "enp24s0f0np0"
-TARGET_MAC = "c4:70:bd:a0:56:bc"
+TARGET_MAC = "c4:70:bd:a0:56:ac"
 SOURCE_MAC = get_if_hwaddr(INTERFACE)
 TARGET_IP = "10.3.10.45"
-SOURCE_IP = "10.3.10.43"
+SOURCE_IP = "10.3.10.42"
 TARGET_PORT = 53
 
 QUERY_DOMAINS = ["example.local.", "example.org.", "test.local."]
-NUM_MEASUREMENTS = 10
+NUM_MEASUREMENTS = 100000
 
 def send_and_receive():
     domain = random.choice(QUERY_DOMAINS)
@@ -29,7 +29,7 @@ def send_and_receive():
 
     response = sniff(
         iface=INTERFACE,
-        filter="udp port 53",
+        filter="udp port 5353",
         timeout=2,
         count=1
     )
