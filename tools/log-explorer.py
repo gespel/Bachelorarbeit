@@ -5,48 +5,42 @@ logfile = sys.argv[1]
 
 time_format = "%H:%M:%S.%f"
 
-requests = []
-responses = []
+rtts = []
+lost = 0
 
 with open(logfile, "r") as f:
-    for line in f:
-        line = line.strip()
-        if not line:
-            continue
-        timestamp = line.split()[0]
-        if "4660+" in line:
-            requests.append(datetime.strptime(timestamp, time_format))
-        elif "4660*-" in line:
-            responses.append(datetime.strptime(timestamp, time_format))
+    lines = [line.strip() for line in f if line.strip()]
 
-used_responses = set()
-matched_pairs = []
+i = 0
+while i < len(lines):
+    line = lines[i]
+    
+    if "4660+" in line:
+        request_time = datetime.strptime(line.split()[0], time_format)
+        
+        if i + 1 < len(lines):
+            next_line = lines[i + 1]
+            if "4660*-" in next_line:
+                response_time = datetime.strptime(next_line.split()[0], time_format)
+                rtt = (response_time - request_time).total_seconds() * 1000
+                rtts.append(rtt)
+                i += 2
+                continue
+        
+        lost += 1
+        i += 1
+    else:
+        i += 1  # Skip non-request lines
 
-for req_time in requests:
-    pair = None
-    for i, resp_time in enumerate(responses):
-        if i in used_responses:
-            continue
-        if resp_time > req_time:
-            pair = (req_time, resp_time)
-            used_responses.add(i)
-            break
-    if pair:
-        matched_pairs.append(pair)
+total_requests = len(rtts) + lost
 
-rtts = [(resp - req).total_seconds() * 1000 for req, resp in matched_pairs]  # in ms
-
-total_requests = len(requests)
-successful = len(matched_pairs)
-lost = total_requests - successful
-
-for i, rtt in enumerate(rtts, 1):
-    print(f"RTT #{i}: {rtt:.3f} ms")
+for idx, rtt in enumerate(rtts, 1):
+    print(f"RTT #{idx}: {rtt:.3f} ms")
 
 if rtts:
     avg_rtt = sum(rtts) / len(rtts)
     print(f"\nDurchschnittliche RTT: {avg_rtt:.3f} ms")
 
 print(f"\nAnzahl Anfragen insgesamt: {total_requests}")
-print(f"Erfolgreiche Antworten: {successful}")
+print(f"Erfolgreiche Antworten: {len(rtts)}")
 print(f"Verlorene Pakete (keine Antwort): {lost}")
