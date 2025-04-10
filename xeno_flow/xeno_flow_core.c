@@ -202,7 +202,8 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 
 	actions.action_idx = 0;
 
-	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);	
+	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
+	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0x08, 0xc0, 0xeb, 0xa5, 0x61, 0x26);
 	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
 
 	result = doca_flow_pipe_add_entry(0, pipe, &match, &actions, &monitor, NULL, 0, status, &entry_mac);
