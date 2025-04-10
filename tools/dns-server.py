@@ -17,10 +17,10 @@ logging.info(f"DNS-Server läuft auf {LISTEN_IP}:{LISTEN_PORT} für {TARGET_DOMA
 while True:
     data, addr = sock.recvfrom(512)
     dns = DNS(data)
-    logging.info(f"Paket erhalten von {addr}")
+    #logging.info(f"Paket erhalten von {addr}")
     if dns.opcode == 0 and dns.qr == 0 and dns.qdcount == 1:
         qname = dns[DNSQR].qname.decode()
-        logging.info(f"Anfrage: {qname} von {addr}")
+        #logging.info(f"Anfrage: {qname} von {addr}")
 
         if qname in TARGET_DOMAINS:
             response = DNS(
