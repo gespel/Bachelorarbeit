@@ -1,44 +1,47 @@
 import argparse
-
+import os
 from trex_stl_lib.api import *
 
-SRC_IP = "10.0.0.1"
+SRC_PORT = 1234
 DEST_IP = "10.0.0.1"
 DEST_PORT = 80
-SRC_PORT = 1234
-#VALID_IP_RANGE = "10.3.11.1","10.3.11.254"
-#VALID_IP_RANGE = "10.0.0.2","10.0.0.2"
-VALID_IP_RANGE = "1.1.1.2", "1.1.1.2"
+SRC_IP_LIST = ["1.1.1.2", "1.1.1.3", "1.1.1.4"]  # <-- hier definierst du die gewünschten src IPs
 bench_pps = 120000000
 
 
 class STLS1(object):
-    def __init__ (self):
+    def __init__(self):
         pass
-    def create_stream1 (self,pps):
-        payload = ""
-        # Ethernet(14) + IP(20) + UDP(8) = 42 bytes
-        for x in range(0, 86):
-            payload += "x"
-        pkt =  Ether()/IP(src=SRC_IP,dst=DEST_IP,id=1,tos=0)/UDP(sport=SRC_PORT,dport=DEST_PORT)/(payload.encode("ascii"))
-        vm = STLScVmRaw([STLVmFlowVar("ip_src", min_value=VALID_IP_RANGE[0],max_value=VALID_IP_RANGE[1], size=4, step=1,op="inc"),
-             STLVmWrFlowVar(fv_name="ip_src", pkt_offset= "IP.src"),
-             STLVmFixChecksumHw(l3_offset="IP",l4_offset="UDP",l4_type=CTRexVmInsFixHwCs.L4_TYPE_UDP)],
-             cache_size = 254
 
-        )
-        return STLStream(packet = STLPktBuilder(pkt = pkt ,vm = vm),
-               mode = STLTXCont(pps = pps),
-               flow_stats = STLFlowStats(pg_id = 1))
+    def create_stream_with_ip(self, pps, src_ip, pg_id):
+        payload = "x" * 86  # Ethernet(14) + IP(20) + UDP(8) = 42 bytes
 
-    def get_streams (self,tunables,**kwargs):
+        pkt = Ether() / IP(src=src_ip, dst=DEST_IP, id=1, tos=0) / UDP(sport=SRC_PORT, dport=DEST_PORT) / payload.encode("ascii")
+
+        vm = STLScVmRaw([
+            STLVmFixChecksumHw(l3_offset="IP", l4_offset="UDP", l4_type=CTRexVmInsFixHwCs.L4_TYPE_UDP)
+        ])
+
+        return STLStream(packet=STLPktBuilder(pkt=pkt, vm=vm),
+                         mode=STLTXCont(pps=pps),
+                         flow_stats=STLFlowStats(pg_id=pg_id))
+
+    def get_streams(self, tunables, **kwargs):
         parser = argparse.ArgumentParser(description='Argparser for {}'.format(os.path.basename(__file__)),
-                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-        parser.add_argument('--ppsv',type=int,default=bench_pps,
-               help="Packets per second for valid traffic")
+                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        parser.add_argument('--ppsv', type=int, default=bench_pps,
+                            help="Packets per second for valid traffic")
 
         args = parser.parse_args(tunables)
-        return [self.create_stream1(args.ppsv)]
-        #return [self.create_stream1(args.ppsv),self.create_stream2(args.ppsi)]
+
+        streams = []
+        pps_per_stream = args.ppsv // len(SRC_IP_LIST)
+
+        for i, src_ip in enumerate(SRC_IP_LIST):
+            streams.append(self.create_stream_with_ip(pps=pps_per_stream, src_ip=src_ip, pg_id=i + 1))
+
+        return streams
+
+
 def register():
     return STLS1()
