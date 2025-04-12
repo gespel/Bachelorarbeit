@@ -39,7 +39,7 @@ for idx, rtt in enumerate(rtts, 1):
 
 if rtts:
     avg_rtt = sum(rtts) / len(rtts)
-    print(f"\nDurchschnittliche RTT: {avg_rtt:.3f} ms")
+    print(f"\nDurchschnittliche RTT: {avg_rtt:.6f} ms")
 
 print(f"\nAnzahl Anfragen insgesamt: {total_requests}")
 print(f"Erfolgreiche Antworten: {len(rtts)}")
