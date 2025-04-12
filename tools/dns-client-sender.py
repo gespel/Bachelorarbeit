@@ -25,7 +25,7 @@ def send_dns_request(domain):
     return out
 
 if __name__ == "__main__":
-    for i in range(600):
+    for i in range(1800):
         domain = random.choice(QUERY_DOMAINS)
         start = send_dns_request(domain)
         

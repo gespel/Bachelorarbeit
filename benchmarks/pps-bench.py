@@ -5,7 +5,7 @@ from trex_stl_lib.api import *
 SRC_PORT = 1234
 DEST_IP = "10.0.0.1"
 DEST_PORT = 80
-SRC_IP_LIST = ["1.1.1.2", "1.1.1.3", "1.1.1.4"]  # <-- hier definierst du die gewünschten src IPs
+SRC_IP_LIST = ["10.2.11.2", "10.2.11.3", "10.2.11.4", "10.2.11.5"]
 bench_pps = 120000000
 
 
