@@ -23,7 +23,7 @@ while i < len(lines):
             if "4660*-" in next_line:
                 response_time = datetime.strptime(next_line.split()[0], time_format)
                 rtt = (response_time - request_time).total_seconds() * 1000
-                if rtts < 1000:
+                if rtt < 1000:
                     rtts.append(rtt)
                 i += 2
                 continue
