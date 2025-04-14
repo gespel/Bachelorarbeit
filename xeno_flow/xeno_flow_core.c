@@ -130,7 +130,6 @@ static doca_error_t create_root_pipe(struct doca_flow_port *port,
 	SET_MAC_ADDR(actions0.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	//actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
 	//actions0.outer.ip4.dst_ip = 0xffffffff;
-
 	actions_arr[0] = &actions0;
 
 	/* monitor with changeable shared counter ID */
