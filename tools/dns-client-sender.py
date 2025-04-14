@@ -1,5 +1,6 @@
 import time
 import random
+import tqdm
 from scapy.all import DNS, DNSQR, Ether, IP, UDP, sendp, get_if_hwaddr
 
 INTERFACE = "enp24s0f0np0"
@@ -25,7 +26,7 @@ def send_dns_request(domain):
     return out
 
 if __name__ == "__main__":
-    for i in range(1800):
+    for i in tqdm.tqdm(range(1800)):
         domain = random.choice(QUERY_DOMAINS)
         start = send_dns_request(domain)
         
