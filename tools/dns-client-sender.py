@@ -30,6 +30,6 @@ if __name__ == "__main__":
         domain = random.choice(QUERY_DOMAINS)
         start = send_dns_request(domain)
         
-        print(f"Nr. {i} [Sender] Sende Anfrage für {domain} | time: {start}")
+        #print(f"Nr. {i} [Sender] Sende Anfrage für {domain} | time: {start}")
         time.sleep(1)
         
