@@ -1,6 +1,7 @@
 import time
 import random
 import tqdm
+import sys
 from scapy.all import DNS, DNSQR, Ether, IP, UDP, sendp, get_if_hwaddr
 
 INTERFACE = "enp24s0f0np0"
