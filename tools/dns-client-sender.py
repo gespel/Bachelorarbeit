@@ -26,10 +26,10 @@ def send_dns_request(domain):
     return out
 
 if __name__ == "__main__":
-    for i in tqdm.tqdm(range(1800)):
+    for i in tqdm.tqdm(range(1800*int(sys.argv[1]))):
         domain = random.choice(QUERY_DOMAINS)
         start = send_dns_request(domain)
         
         #print(f"Nr. {i} [Sender] Sende Anfrage für {domain} | time: {start}")
-        time.sleep(1)
+        time.sleep(1/int(sys.argv[1]))
         
