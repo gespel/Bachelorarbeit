@@ -45,3 +45,4 @@ if rtts:
 print(f"\nAnzahl Anfragen insgesamt: {total_requests}")
 print(f"Erfolgreiche Antworten: {len(rtts)}")
 print(f"Verlorene Pakete (keine Antwort): {lost}")
+print(f"Packetloss: {lost/total_requests*100} %")
