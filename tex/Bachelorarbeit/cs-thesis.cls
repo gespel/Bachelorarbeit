@@ -26,7 +26,7 @@ pdfpagelabels=true]{hyperref}
 \RequirePackage{relsize}
 \RequirePackage{graphicx}
 \RequirePackage{ifthen}
-\RequirePackage[ngerman,english]{babel}
+\RequirePackage[ngerman]{babel}
 \RequirePackage[printonlyused]{acronym}
 \RequirePackage{float}
 \RequirePackage{scrhack} % to solve warning of float
