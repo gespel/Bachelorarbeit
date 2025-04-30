@@ -28,6 +28,7 @@ Um der Funktion einer intelligenten Netzwerkkarte nachzukommen, sind auf der Blu
     \label{fig:enter-label}
 \end{figure}
 \subsection{Hardwareeinheiten}
+Im folgenden wird eine Auswahl von Hardwarebeschleunigern vorgestellt.
 \subsubsection{PKA}
 PKA steht für Public-Key-Acceleration und bietet eine Reihe von Funktionalitäten im Zusammenhang mit der Arbeit mit öffentlichen Schlüsseln im Kontext von SSL-Anwendungsfällen. So stellt es beispielsweise einfache bis komplexere arithmetische Operationen wie RSA, Diffie-Hellman sowie Addition und Subtraktion bereit. Es soll eine einfache Programmierschnittstelle bieten, sobald die DOCA-Applikation mit Verschlüsselungen hantiert, die möglichst schnell umgesetzt werden sollen.
 \subsubsection{Decompression}
@@ -53,7 +54,92 @@ DOCA ist ein von NVidia entwickeltes Framework, das speziell für die BlueField-
 DOCA stellt eine Reihe von Services bereit, die vorrangig dazu dienen sollen, eine Ende-zu-Ende-Lösung für einen speziellen Anwendungsfall zu bieten. Dazu gliedert NVidia diverse (Abbildung 3.3) Unterkategorien aus. Einerseits aufgrund des primären Anwendungsfeldes in Rechenzentren wird viel Wert auf Orchestrierung gelegt. Leider bleibt NVidia hier bemerkenswert ungenau, was genau damit eigentlich gemeint ist. Bei der Telemetrie hingegen stellt NVidia eine große Schnittstelle bereit, um genaue hardwarebezogene Daten abrufen zu können. Hierzu werden den Entwickelnden zwei Tools bereitgestellt. Das Tool \textbf{doca\_telemetry\_diag} stellt die Konfiguration des Loggings dar. Dazu kann mithilfe besagter Tools festgelegt werden, welche Telemetriedaten erhoben werden sollen und auch in welchem Samplingintervall. Diese Daten können dann in diversen auswählbaren Dateiformaten abgerufen werden. \textbf{doca\_telemtery\_pcc} soll den Zugang zu speziellen algorithmischen Daten ermöglichen. Damit sind die bereits in DOCA vorimplementierten Funktionen gemeint, die meist hardwarebeschleunigt, also außerhalb des sichtbaren Bereichs des ARM-Hosts, ausgeführt werden. Sonstige Services wie beispielsweise der Firefly sind NVidias Implementierungen des Precision Time Protocols. Ziel dieses Protokolls ist es, die Zeit innerhalb eines Clusters möglichst genau propagieren zu können. Dazu verspricht NVidia, möglichst viel von dieser Komplexität vor dem Anwender mithilfe von Firefly fernzuhalten. Außerdem setzt NVidia zur Konfiguration des Datenverkehrs stark auf die Integration von Open vSwitch (OVS). Dazu wurde eigens ein eigener Service entwickelt, der abermals die eigentliche Komplexität des Konfigurationsprozesses dem Entwickler abgenommen werden soll. Hauptgrund ist allerdings vermutlich, dass, um mit den spezifischen Hardwareeinheiten überhaupt kommunizieren zu können, die Open vSwitch-Interfaces angepasst werden müssen. 
 \subsection{DOCA Bibliotheken}
 Damit eine reibungslose Inbetriebnahme sowie Programmierung einer SmartNIC erfolgen kann, muss klar definiert sein, wie, sofern programmatische Konfigurationen erfolgen sollen, ein Entwickler mit der entsprechenden Hardwareeinheit kommunizieren kann. Damit ist es nicht mehr nötig, die Feinheiten der einzelnen Hardwarekommunikationskanäle zu implementieren, sondern es kann auf eine mehr oder weniger vereinheitlichte Programmierschnittstelle zugegriffen werden. Dazu stellt NVidia Programmbibliotheken in Form von C-Headern bereit, mithilfe derer intrinsische Funktionen auf der Architektur ausgeführt werden können. Dabei lässt sich grob formulieren, dass jede in Kapitel 3.2.1 genannte Hardwareeinheit eben auch eine entsprechende Bibliothek bekommen hat. Zusätzlich gibt es aber auch Bibliotheken, die Funktionen wie Speicherverarbeitung für Anwendungsfälle wie verteilte Speichersysteme implementieren.
-\subsubsection{DOCA Flow}
+\subsection{DOCA Flow}
 DOCA Flow ist die Bibliothek, die sich vollständig mit der Verarbeitung und Modifikation von Netzwerkpaketen beschäftigt. Das Versprechen seitens NVidia ist hierbei, dass alle Funktionen von Flow auf den Hardwarebeschleunigern ausgeführt werden können. DOCA Flow wird, wie viele moderne Systeme, deklarativ programmiert. Das bedeutet, der State des aktuellen Netzwerkverkehrs ist immer genau so, wie er durch die Konfiguration deklariert wurde. Dies hat den großen Vorteil, dass die Entwicklung und in der Folge auch das Debugging sich immer direkt mit dem Programmcode selbst befassen kann, da keine Fehler zur Laufzeit entstehen können (sollten) die so nicht klar vorher definiert worden sind.
+Allgemein ist DOCA Flow darauf ausgelegt, statt Pakete einzeln zu behandeln, in Netzwerkdatenpfaden den Verkehr zu steuern. Dazu werden die Hardwareregeln wie beispielsweise \textbf{Packet Matching}, \textbf{Forwarding} und \textbf{Monitoring} definiert. Beim Packet Matching wird ein Zusammenspiel aus Filter und Match-Regeln verwendet, um Pakete aus dem Datenfluss der NIC auszuwählen und der entsprechenden Pipe zuzuordnen.
+\subsubsection{Flow Pipe}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/pipe.png}
+    \caption{Schemata und Zugehörigkeiten einer Flow Pipe}
+    \label{fig:enter-label}
+\end{figure}
+Eine Flow Pipe beschreibt einen genannten Datenpfad, der deklarativ an die BlueField-3 API übergeben wird. Dabei setzt sich eine Flow Pipe immer aus den drei wesentlichen Bestandteilen \textbf{Match}, \textbf{Monitor}, \textbf{Action} und \textbf{Forward} zusammen. Diese Bestandteile werden in \textbf{Entries} organisiert. Sie bilden die tatsächlichen aktiven Teile der Pipe. Pipes bilden eine Abstraktion eines Datenpfades, auf denen die einzelnen Entries angewendet werden.
+
+Beim Match wird mithilfe einer Zusammensetzung aus Filter und Match-Regeln klar definiert, welche Pakete aus dem Datenstrom der BlueField genommen werden sollen und der entsprechenden Pipe zugeordnet werden. 
+
+Daraufhin wird das Paket laut Dokumentation gespiegelt und dem Monitorteil übergeben. Dieser erlaubt es, Daten über die Pipe auszulesen. So kann zur Laufzeit die Anzahl der von der Pipe verarbeiteten Pakete sowie deren Größe in Bytes ausgelesen werden. Im Verlauf der Messung im späteren Teil wurde der Versuch durchgeführt, ob ein ein- bzw. ausgeschaltetes Monitoring Auswirkungen auf die Leistungsfähigkeit der Karte hat. Dies ist klar zu verneinen. Weder Bandbreite noch Pakete/Sekunde wurden von dem Monitoring beeinflusst.
+
+Nachdem nun Pakete in der entsprechenden Flow Pipe ankommen können, nun eine Reihe von Aktionen auf diese ausgeführt werden. Diese Funktionen werden in Entries durchgeführt. Darunter befinden sich vor allem Funktionen, die die Ethernet- sowie IP-Header modifizieren können. Es ist so beispielsweise nicht ohne weiteres möglich, Pakete einzeln zu verarbeiten, sondern nur Klassen von Paketen, die eben in der entsprechenden Pipe bzw. dem entsprechenden Entry angekommen sind, sprich die eigentliche Payload des Paketes kann \textbf{nicht} von Flow verarbeitet werden. Dies ist vor allem der Tatsache geschuldet, dass es sich hierbei eben um die Programmierung von Hardwarebeschleunigern handelt. Würden wir Pakete einzeln verarbeiten wollen, so müssten diese zur Laufzeit auf den Prozessor der SmartNIC gebracht werden, was mit erheblichen Leistungseinbußen einhergehen würde.
+Die Payload der Pakete kann nicht verarbeitet werden, da diese eine variable Länge besitzen kann, was ein Problem für eine feste Hardwarearchitektur darstellt. Bei festgelegten Header-Bitfeldern allerdings kann eine festdefinierte ASIC-Hardware gut die entsprechenden Bits mithilfe von einfachen logischen Bauteilen verarbeiten. 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/figure_5-1.png}
+    \caption{Aufbau eines IP-Headers}
+    \label{fig:enter-label}
+\end{figure}
+In Abbildung 3.5 ist zu erkennen, dass sich bestimmte Teile eines Headers immer an genau der selben Stelle im Bitfeld befinden. So muss die Hardware nicht erst parsen bzw. erkennen, wo im Paket sich welche Daten befinden.
+
+Zuletzt kann in einer Pipe aber auch in den Entries selbst mittels des \textbf{Forward} festgelegt werden, wohin die relevanten Pakete geleitet werden sollen. Dabei kann sowohl direkt auf einen Port, der einem entsprechenden Hardware-Port auf der Karte gleicht, eine andere Pipe oder gar kein Folgeziel gewählt werden. Bei letzterem handelt es sich logisch um einen Drop des Pakets. Von besonderem Interesse ist allerdings die Funktion, in eine andere Pipe weiterzuleiten, da sich so komplexere Anwendungen umsetzen lassen, in denen einzelne Pipes bestimmten Traffic verarbeiten und mehrere Datenströme modifiziert werden können. Allgemein bietet DOCA Flow die Kategorisierung dieser Pipes. Dabei wird zwischen sogenannten \textbf{Steering Domains} unterschieden. Diese verbieten gewissen Pipefunktionen, wenn der entsprechenden Domain eine Pipe hinzugefügt wurde. 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/Screenshot 2025-04-30 at 11-16-05 DOCA Flow - NVIDIA Docs.png}
+    \caption{Beispielhafter Flow Pipe Aufbau}
+    \label{fig:enter-label}
+\end{figure}
+
+In Abbildung 3.6 ist eine Beispielanwendung per Diagramm zu sehen, in der eine Verkettung von Flow Pipes erfolgt ist. Dazu sei erwähnt, dass es auch möglich ist, dass, wenn Pakete nicht von einer entsprechenden Pipe und deren Match gefangen werden, an einen Hostkern durchgereicht werden können. Dort kann dann ein weiteres Programm laufen, welches daraufhin diese Pakete verarbeitet. Dabei verlässt das Paket allerdings den hardwarebeschleunigten Bereich und ist wieder an die Performance des ARM-Cores gebunden.
+\subsubsection{Flow Entry}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/entries.png}
+    \caption{Auslagerung von Pipe Entries}
+    \label{fig:enter-label}
+\end{figure}
+Laut NVidia werden Entries einer Flow Pipe auf mehreren Kernen des Data Accelerator verarbeitet. Jedem dieser Kerne ist eine entsprechende Queue mit den zu verarbeitenden Paketen zugeordnet. Durch diese Parallelisierung soll es möglich sein, dass der Paketverkehr ohne Latenzzugewinn verarbeitet werden kann. Leider waren im Rahmen dieser Arbeit keine weiteren Daten wie genau diese Lastverteilung auf den 256 Threads funktioniert, auffindbar.
+\subsubsection{Packet Matching}
+Für die Funktion eines Lastverteilers ist eine der Hauptfunktionen, den gesamten Traffic in handhabbarere Teillasten zu modulieren, damit diese dann auf verschiedene Backends verteilt werden können. Dazu ist eine Art des Packet Matchings besonders praktisch. 
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/paketmatchng.png}
+    \caption{Matching Schema der BlueField}
+    \label{fig:enter-label}
+\end{figure}
+Das Packet-Matching auf in Flow ist in Abbildung 3.8 zu sehen. Zunächst erreicht ein Paket den Filter und wird mit diesem auf der Bit-Ebene \"verundet\". Sprich, das Ausgabebitfeld besitzt an einer Position eine 1, wenn das Datenpaket und der Filter an der gegebenen Stelle auch eine 1 gesetzt haben. So kann eine Art Vorauswahl realisiert werden, in der Entwickler festlegen können, welche Bits des entsprechenden Feldes überhaupt analysiert werden sollen. Daraufhin erreicht das neu berechnete Bitfeld die Regel. In dieser wird überprüft, ob das Bitfeld der Regel entspricht. Wenn dies der Fall ist, so wird das Paket dem Match zugeordnet. Wird die Regel nicht erfüllt, wird das Paket fortan als Miss betrachtet.
+\begin{itemize}
+  \item Sei $P \in \{0,1\}^n$ das eingehende Paket als Bitfeld.
+  \item Sei $F \in \{0,1\}^n$ das Bitfeld als Maske angibt an welche Bits berücksichtigt werden sollen
+  \item Die bitweise Filterung erfolgt durch eine Konjunktion  
+  \[
+    P_{neu} = P \land F = (P_1 \land F_1, P_2 \land F_2, \dots, P_n \land F_n)
+  \]
+  \item Sei $R \in \{0,1\}^n$ das Bitmuster der Rule. Ein Paket wird als \emph{Match} klassifiziert, wenn gilt:
+  \[
+    P_{neu} = R
+  \]
+  \item Sonst wird das Paket als \emph{Miss} behandelt:
+  \[
+    P_{neu} \ne R
+  \]
+\end{itemize}
+
+In der Matching-Deklaration kann außerdem unterschieden werden, ob Pakete explizit oder implizit gematcht werden sollen. Damit kann festgelegt werden, ob wir wie beim expliziten Match das genaue Bitfeld aus dem Datenfluss extrahieren wollen. Alternativ können wir mittels des impliziten Matchens uns Muster aus den Bitfeldern extrahieren und können so mehrere Bitfelder extrahieren, sofern diese die deklarierten Muster enthalten.
+
+Sobald Bitfelder allgemein verarbeitet werden sollen, so muss dies mithilfe eines C Structs klar definiert werden. Dazu werden alle Bits des gewünschten Bitfeldes beim Definieren der Datenstruktur zunächst auf 1 gesetzt.
 \subsection{DOCA Treiber}
+Damit die entsprechenden Hardwareeinheiten vom ARM-SmartNIC-System aus betrieben werden können, hat NVidia eigens bestimmte Treiber entwickelt. Dazu zählt unter anderem auch eine DPDK-Implementierung. DPDK steht für Data Plane Development Kit und ist ein von der Linux Foundation verwaltetes Open Source Projekt. Es wird verwendet, um Kernelprozesse der Datenverarbeitung aus dem Linuxkernel in den Userspace zu verlagern, um dort eine Verarbeitung vorzunehmen. DOCA Flow nutzt somit DPDK, um die Pakete von dem Data Accelerator auf den ARM-Kern in den Userspace zu bringen, da DOCA Applikationen im Userspace ausgeführt werden. 
+
+Außerdem hat NVidia in DOCA andere Treiber entwickelt, wie beispielsweise Virtio-FS, mithilfe derer eine kompakte Integration von Dateisystemen in die BlueField Systeme vorgenommen werden kann. Ein denkbarer Einsatzzweck wäre die dynamische Anbindung von Persistent Volumes in einem Kubernetes Cluster, sofern sich die Volumes auf einem anderen Knoten befinden als der Pod, der versucht, das entsprechende Persistent Volume zu claimen.
 \subsection{Anwendungen}
+DOCA stellt eine Reihe von bereits implementierten Applikationen bereit, die eine Reihe von denkbaren Anwendungszwecken von DOCA präsentieren sollen. Im Rahmen dieser Arbeit wurden drei dieser Applikationen näher betrachtet.
+
+\textit{So ist in einem Flyer auch von einem Load Balancer die Rede. Allerdings war dieser nicht auffindbar.}
+
+\subsubsection{Firewall}
+Hier hat NVidia eine beispielhafte Firewall-Applikation entwickelt, deren Sinn und Zweck es ist, mit Hilfe von gRPCs zwischen Host und SmartNIC dynamisch Hardwareregeln hinzuzufügen bzw. diese wieder zu entfernen. Dabei wird der Host von dieser Aufgabe entlastet und die Pakete werden nicht erst auf dem Zielsystem, sondern bereits auf deren Netzwerkkarten verworfen.
+
+\subsubsection{GPU Packet Processing}
+Sollte im Hostsystem zusätzlich zur BlueField auch noch eine GPU verbaut sein, so bietet DOCA eine Applikation an, mit deren Hilfe Pakete von der GPU verarbeitet werden können. Das könnte beispielsweise für Anwendungen sehr nützlich sein, in denen nicht nur Header-Bitfelder verarbeitet werden, sondern auch die Payloads der Pakete verarbeitet werden sollen. Dazu eignen sich die Vektoreinheiten einer Grafikkarte gut, da diese auf hochdimensionale Vektorräume ausgelegt sind. 
+
+\subsubsection{Switch}
+Die Kommunikation zwischen Host-System und der DPU wird mittels verschiedener Hardware-Networking-Interfaces angeboten. Bei der Switch-Applikation wird der Netzwerkverkehr auf der DPU in verschiedene Teilverkehre gespaltet und dann auf mehrere dieser Networking-Interfaces weitergegeben. Dadurch wird abermals das Hostsystem entlastet, da die spezielle Fallunterscheidung eines jeden Pakets nicht mehr vom Prozessor des Hosts übernommen werden muss, sondern bereits auf der Netzwerkkarte passiert. Außerdem bietet die SmartNIC-Architektur zusätzlich die Möglichkeit, bestimmte Hardwarebeschleuniger für diesen Einsatzzweck zu verwenden.
