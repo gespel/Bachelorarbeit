@@ -85,7 +85,6 @@ static doca_error_t create_egress_pipe(struct doca_flow_port *port,
 		goto destroy_pipe_cfg;
 	}
 
-	/* forwarding traffic to other port */
 	fwd.type = DOCA_FLOW_FWD_PORT;
 	fwd.port_id = 1;
 	fwd_miss.type = DOCA_FLOW_FWD_DROP;
@@ -119,20 +118,16 @@ static doca_error_t create_root_pipe(struct doca_flow_port *port,
 	memset(&fwd, 0, sizeof(fwd));
 	memset(&fwd_miss, 0, sizeof(fwd_miss));
 
-	/* 5 tuple match */
   	match.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
 	match.outer.ip4.src_ip = BE_IPV4_ADDR(255, 255, 255, 255);
-
 	match_mask.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);
 	DOCA_LOG_INFO("%d", match_mask.outer.ip4.src_ip);
 
 	SET_MAC_ADDR(actions0.outer.eth.dst_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
 	SET_MAC_ADDR(actions0.outer.eth.src_mac, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff);
-	//actions0.outer.l3_type = DOCA_FLOW_L3_TYPE_IP4;
-	//actions0.outer.ip4.dst_ip = 0xffffffff;
+
 	actions_arr[0] = &actions0;
 
-	/* monitor with changeable shared counter ID */
 	monitor.counter_type = DOCA_FLOW_RESOURCE_TYPE_SHARED;
 	monitor.shared_counter.shared_counter_id = 0xffffffff;
 
@@ -163,7 +158,6 @@ static doca_error_t create_root_pipe(struct doca_flow_port *port,
 		goto destroy_pipe_cfg;
 	}
 
-	/* forwarding traffic to other port */
 	fwd.type = DOCA_FLOW_FWD_PORT;
 	fwd.port_id = 1;
 	fwd_miss.type = DOCA_FLOW_FWD_DROP;
@@ -196,12 +190,9 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	monitor.shared_counter.shared_counter_id = shared_counter_id;
 
 	match.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 1);	
-	//match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	//match.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
 
 	actions.action_idx = 0;
 
-	//SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xa0, 0x88, 0xc2, 0xb6, 0x14, 0x1a);
 	SET_MAC_ADDR(actions.outer.eth.dst_mac, 0xe8, 0xeb, 0xd3, 0x9c, 0x71, 0xac);
 	SET_MAC_ADDR(actions.outer.eth.src_mac, 0xc4, 0x70, 0xbd, 0xa0, 0x56, 0xbd);
 
@@ -216,11 +207,7 @@ static doca_error_t add_shared_counter_pipe_entry(struct doca_flow_pipe *pipe,
 	memset(&monitor, 0, sizeof(monitor));
 	memset(&fwd, 0, sizeof(fwd));
 
-	//monitor.shared_counter.shared_counter_id = shared_counter_id;
-
 	match.outer.ip4.src_ip = BE_IPV4_ADDR(0, 0, 0, 0);
-	//match.outer.l4_type_ext = DOCA_FLOW_L4_TYPE_EXT_UDP;
-	//match.outer.udp.l4_port.dst_port = rte_cpu_to_be_16(8080);
 
 	actions.action_idx = 0;
 
@@ -325,9 +312,7 @@ doca_error_t xeno_flow(int nb_queues)
 	int nb_ports = 1;
 	struct flow_resources resource = {1};
 	uint32_t nr_shared_resources[SHARED_RESOURCE_NUM_VALUES] = {0};
-	//struct doca_flow_port *ports[nb_ports];
 	struct doca_flow_port *ports[2];
-	//struct doca_flow_port *p0;
 	struct doca_dev *dev_arr[nb_ports];
 	struct doca_flow_pipe *udp_pipe;
 	int port_id = 0;
@@ -357,7 +342,6 @@ doca_error_t xeno_flow(int nb_queues)
 
 	doca_try(create_root_pipe(ports[0], 0, DOCA_FLOW_L4_TYPE_EXT_UDP, &udp_pipe), "Failed to create pipe", nb_ports, ports);
 	
-	//doca_try(create_shared_counter_pipe(ports[0], 0, DOCA_FLOW_L4_TYPE_EXT_UDP, &udp_pipe), "Failed to create pipe", nb_ports, ports);
 
 	doca_try(add_shared_counter_pipe_entry(udp_pipe, DOCA_FLOW_L4_TYPE_EXT_UDP, shared_counter_ids[0], &status), "Failed to add entry", nb_ports, ports);
 
@@ -365,7 +349,6 @@ doca_error_t xeno_flow(int nb_queues)
 
 
 	DOCA_LOG_INFO("Starting the load balancer loop");
-	//sleep(5);
 
 	int numPacketsOld = 0;
 	int numPacketsNew = 0;
