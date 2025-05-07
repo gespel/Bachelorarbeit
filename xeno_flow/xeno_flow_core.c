@@ -342,11 +342,9 @@ doca_error_t xeno_flow(int nb_queues)
 
 	doca_try(create_root_pipe(ports[0], 0, DOCA_FLOW_L4_TYPE_EXT_UDP, &udp_pipe), "Failed to create pipe", nb_ports, ports);
 	
-
 	doca_try(add_shared_counter_pipe_entry(udp_pipe, DOCA_FLOW_L4_TYPE_EXT_UDP, shared_counter_ids[0], &status), "Failed to add entry", nb_ports, ports);
 
 	doca_try(doca_flow_entries_process(ports[0], 0, DEFAULT_TIMEOUT_US, num_of_entries), "Failed to process entries", nb_ports, ports);
-
 
 	DOCA_LOG_INFO("Starting the load balancer loop");
 

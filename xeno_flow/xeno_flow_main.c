@@ -64,11 +64,9 @@ int main(int argc, char **argv)
 		.port_config.nb_hairpin_q = 2,
 	};
 
-	/* Register a logger backend */
 	result = doca_log_backend_create_standard();
 	if (result != DOCA_SUCCESS)
 		goto sample_exit;
-	/* Register a logger backend for internal SDK errors and warnings */
 	result = doca_log_backend_create_with_file_sdk(stderr, &sdk_log);
 	if (result != DOCA_SUCCESS)
 		goto sample_exit;
