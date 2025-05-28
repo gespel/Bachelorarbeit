@@ -7,18 +7,18 @@ Um diese Arbeit in einen wissenschaftlichen Kontext zu setzen, wird im Folgenden
     \label{fig:enter-label}
 \end{figure}
 \section{Demystifying Datapath Accelerator Enhanced Off-path SmartNIC}
-\textit{Diese Arbeit wurde von Xuzheng Chen, Jie Zhang, Ting Fu, Yifan Shen, Shu Ma, Kun Qian, Lingjun Zhu, Chao Shi, Yin Zhang, Ming Liu und Zeke Wang verfasst. Sie ist an der Zhejiang University, Alibaba Cloud und der University of Wisconsin–Madison entstanden.}
+\textit{Diese Arbeit wurde 2024 von Xuzheng Chen, Jie Zhang, Ting Fu, Yifan Shen, Shu Ma, Kun Qian, Lingjun Zhu, Chao Shi, Yin Zhang, Ming Liu und Zeke Wang verfasst. Sie ist an der Zhejiang University, Alibaba Cloud und der University of Wisconsin–Madison entstanden.}\cite{chen2024demystifying}
 
 In diesem Paper wird ein allgemeiner Performance-Kontext erstellt. Dabei liegt der besondere Fokus auf der Analyse und der Leistung des Datapath Accelerators (DPA). Dieser ist auf allen Generationen BlueField verbaut worden, wird allerdings kaum in dem Material von NVidia erwähnt. Allerdings handelt es sich beim DPA um die relevanteste Hardwareeinheit für die Netzwerkfunktionalität. 
 
 In der Arbeit wird auch ein Vergleich zwischen dem Host-System, dem ARM-System und dem DPA selbst gezogen. Dabei werden die Metriken Latenz, verzerrte Lasten, Schreib- und Lesebandbreite, Sende- und Empfangspaketbandbreite u. a. ausgewertet (siehe Abbildung 3.1). Die Autoren identifizieren den verbauten DPA als einen RV64IMAC. Dies ist ein RISC-V-Prozessor mit einem Basistakt von 1.8 GHz. Sie entwickeln drei unterschiedliche Benchmark-Methoden, um eine Baseline zu schaffen, die alle drei verfügbaren Architekturen sinnvoll miteinander vergleicht. Die Autoren erkennen den DPA als einen der eventuellen Schwachpunkte einer spezifischen Implementierung. Die besondere Kritik liegt dabei auf der fehlenden Dokumentation seitens NVidia, die es so den Entwickelnden der Plattform deutlich erschwert, Software für diese zu entwickeln.
 
 \section{Performance Characteristics of the BlueField-2 SmartNIC}
-\textit{Diese Arbeit wurde von Jianshen Liu, Carlos Maltzahn, Craig Ulmer und Matthew Leon Curry verfasst. Sie ist an der UC Santa Cruz und den Sandia National Laboratories entstanden.}
+\textit{Diese Arbeit wurde 2021 von Jianshen Liu, Carlos Maltzahn, Craig Ulmer und Matthew Leon Curry verfasst. Sie ist an der UC Santa Cruz und den Sandia National Laboratories entstanden.}\cite{liu2021performance}
 
 Abermals geht es in dieser Arbeit um die allgemeine Performance der BlueField-2. Allerdings wird hier neben der gegebenen Hardware auch die Netzwerkfähigkeit überprüft. Die ARM-Kerne werden mittels Netzwerkaufgaben stark belastet, um die oberen Grenzen für Abhängigkeiten im Datenfluss zu erkennen. Das Paper ist von besonderem Interesse im Kontext dieser Bachelorarbeit, da die echte Leistung der BlueField-2-Generation mit der beworbenen Netzwerkbandbreite verglichen wird. Die Autoren implementieren einen Testfall, bei dem Netzwerkverkehr zwischen dem Host, der Smart NIC und einem weiteren Remote-Host stattfindet. Sie kommen zu dem Ergebnis, dass nur sehr schwer und unter einer Menge von Umständen überhaupt die volle Netzwerkbandbreite verwendet werden kann. Hauptsächlich ist die Leistung von der spezifischen Arbeitslast abhängig. Somit sollte vor einer Implementierung abgewogen werden, um festzustellen, ob sich das Offloading überhaupt auf eine Smart NIC-Architektur lohnt.
 \section{A Comprehensive Survey on SmartNICs: Architectures, Development Models, Applications, and Research Directions}
-\textit{Diese Arbeit wurde von Elie Kfoury, Samia Choueiri, Ali Mazloum, Ali AlSabeh, Jose Gomez und Jorge Crichigno verfasst. Sie ist an der University of South Carolina entstanden.}
+\textit{Diese Arbeit wurde 2024 von Elie Kfoury, Samia Choueiri, Ali Mazloum, Ali AlSabeh, Jose Gomez und Jorge Crichigno verfasst. Sie ist an der University of South Carolina entstanden.}\cite{kfoury2024comprehensive}
 
 Dieses Paper stellt einen guten Überblick über Smart NICs im Allgemeinen dar. Außerdem wird die Entwicklung der Architekturen der SmartNICs historisch aufgearbeitet. Es kann als eine Art Metapaper betrachtet werden, da auch ein Ausblick gegeben wird, was in Zukunft auf den jeweiligen Plattformen von Interesse sein könnte. Es wird ein klarer Zusammenhang zwischen dem Ende des Mooreschen Gesetzes und der fehlenden weiteren Leistungssteigerungen bei normalen Prozessoren mit dem Aufkommen von Smart NICs hergestellt. Es wird zwischen den drei folgenden Typen von Netzwerkkarten unterschieden:
 \begin{itemize}
@@ -28,7 +28,7 @@ Dieses Paper stellt einen guten Überblick über Smart NICs im Allgemeinen dar. 
 \end{itemize}
 Innerhalb der Klasse von Smart-NICs treffen die Autoren außerdem die weitere Unterscheidung zwischen FPGA- und ASIC-basierten Smart NICs. Es wird angeraten, eine standardisierte Programmierungsplattform zu entwickeln, die es erlaubt, für alle Smart NIC-Plattformen zu programmieren.
 \section{Laconic: Streamlined Load Balancers for SmartNICs}
-\textit{Diese Arbeit wurde von Tianyi Cui, Chenxingyu Zhao, Wei Zhang und Kaiyuan Zhang  verfasst. Sie ist an der University of Washington und bei Microsoft entstanden.}
+\textit{Diese Arbeit wurde 2024 von Tianyi Cui, Chenxingyu Zhao, Wei Zhang und Kaiyuan Zhang  verfasst. Sie ist an der University of Washington und bei Microsoft entstanden.}\cite{cui2024laconic}
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{images/laconic_workflow_v1.png}

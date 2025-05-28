@@ -42,20 +42,21 @@ Bei Off-Path-SmartNICs handelt es sich hingegen um Geräte, bei denen eine klare
 \subsection{Application Specific Integrated Circuits}
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\linewidth]{images/aisic.png}
-    \caption{Hardware-Architekturen beim Bitcoin Mininig \cite{bitcoin}}
+    \includegraphics[width=0.8\linewidth]{images/lowpowerasic.png}
+    \caption{KAIST LLM Accelerator \cite{kaist}}
     \label{fig:enter-label}
 \end{figure}
 Application Specific Integrated Circuits (ASICs) sind Hardwareeinheiten, die ein sehr großes Anwendungsgebiet entwickelt haben. So werden sie nicht nur in Netzwerkbeschleunigern verwendet, sondern werden immer dann verwendet, wenn der Zweck der Hardware sich gut beschreiben lässt und somit keine große Varianz an Aufgaben von der entsprechenden Einheit übernommen werden muss. So wird es nämlich den entsprechenden Ingenieuren erlaubt, statt eines allgemeinen Rechners eine hochspezialisierte Einheit zu entwickeln, bei der die Merkmale einer klassischen Prozessorrecheneinheit vernachlässigt werden können. Dadurch ist eine wesentliche Effizienzsteigerung möglich, die es erlaubt, mit wesentlich weniger Energie die gleiche Leistung zu erzielen, wie sonst eine vergleichbare Recheneinheit \cite{asic}. Für rechenintensive Systeme hingegen lässt sich die gesteigerte Effizienz nutzen. Somit kann der allgemeine Durchsatz angehoben werden und es sind Systeme realisierbar, die mit der Anwendung klassischer Rechenwerke erheblich mehr Aufwand bedeuten würden. Zudem erzeugen solche Systeme deutlich mehr Abwärme und würden die Entwicklung somit auch vor ein thermodynamisches Problem stellen. Der Überbegriff ASIC ist nur sehr allgemein und gibt ähnlich wie bei Prozessoren keine Auskunft über die genaue Implementierung. Es gibt viele Architekturen, die für ASICs zur Anwendung kommen, da eben auch die Gebiete weitreichend sind und sich sehr divers unterscheiden. In Abbildung 2.3 ist ein ASIC zu sehen, der die Kommunikation zwischen einem Prozessor und einem sogenannten FireWire-Anschluss eines Endgerätes realisiert. Es muss festgelegt sein, welcher Standard von Geräten mit besagtem Anschluss erwartet wird, um den Prozessor des Hostgerätes mittels eines ASICs zu entlasten.
 \newline
 
-Der Zeitgeist in der Computerwissenschaft färbte letztlich außerdem das immens steigende Interesse an Machine Learning ab. Proportional dazu stieg das Interesse an effizienterer Hardware an, da etwaige Lernprozesse extrem energie- und somit kostenaufwendig sind. Es zeigt sich aktuell ein gesteigertes Interesse daran, ASICs zu fertigen, die effiziente hochdimensionale Vektoroperationen umsetzen. Dazu gibt es bereits mehrere Ansätze, mit denen beispielsweise LLM auf einer ASIC-Architektur ausgeführt werden können (siehe Abbildung 2.5). Machine Learning bietet großes Potenzial, Energie mittels ASICs zu sparen, da bisher GPUs und CPUs zum Einsatz kamen, die beide große Energiekosten mit sich bringen. So erlauben ASICs eine extreme Effizienz im Hinblick auf Leistung/Energiekosten (siehe Abbildung 2.4).
+Der Zeitgeist in der Computerwissenschaft färbte letztlich außerdem das immens steigende Interesse an Machine Learning ab. Proportional dazu stieg das Interesse an effizienterer Hardware an, da etwaige Lernprozesse extrem energie- und somit kostenaufwendig sind. Es zeigt sich aktuell ein gesteigertes Interesse daran, ASICs zu fertigen, die effiziente hochdimensionale Vektoroperationen umsetzen. Dazu gibt es bereits mehrere Ansätze, mit denen beispielsweise LLM auf einer ASIC-Architektur ausgeführt werden können (siehe Abbildung 2.4). Machine Learning bietet großes Potenzial, Energie mittels ASICs zu sparen, da bisher GPUs und CPUs zum Einsatz kamen, die beide große Energiekosten mit sich bringen. So erlauben ASICs eine extreme Effizienz im Hinblick auf Leistung/Energiekosten.
 
-Abbildung 2.4 zeigt, dass ASICs, sowie alle anderen Architekturen in sich selbst nur ein leichtes Leistungswachstum aufweisen. Verwenden wir allerdings unterschiedliche Architekturen, so gibt es doch enorme, wenn auch schwer quantifizierbare Unterschiede.
+Abbildung 2.5 zeigt die Leistungsniveaus der unterschiedlichen Architekturen bei einem Bitcoin-Mining-Algorithmus. Im wesentlichen wird beim Mining etwaiger Cryptowährungen eine Hashsumme berechnet, mit der ein Teil der Blockchain validiert wird. Dabei wird im Falle von Bitcoin ein SHA-256 Hash verwendet. Da es sich dabei um eine sehr allgemeine Berechnung handelt, kann ein guter Vergleich zu vielen anderen Berechnungen gezogen werden. So zeigt Abbildung 2.5, wie sehr Algorithmen hinsichtlich ihrer Laufzeit von speziellen Architekturen profitieren können.
+
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{images/lowpowerasic.png}
-    \caption{KAIST LLM Accelerator \cite{kaist}}
+    \includegraphics[width=0.7\linewidth]{images/aisic.png}
+    \caption{Hardware-Architekturen beim Bitcoin Mininig \cite{bitcoin}}
     \label{fig:enter-label}
 \end{figure}
 \subsection{Speedup}
