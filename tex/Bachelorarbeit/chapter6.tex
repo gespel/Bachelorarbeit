@@ -45,11 +45,11 @@ Zur Messung der Packet Rate und des Packet Losses wird ethtool verwendet, da es 
     \label{fig:enter-label}
 \end{figure}
 \subsection{Packet Rate}
-Bei der Paketrate wird in Abhängigkeit von der Paketgröße gemessen, ob sich der maximale mögliche Paketdurchsatz ändert. Dieser Durchsatz wird hierbei in Paketen pro Sekunde gemessen. Die Variable, die verändert wird, ist hierbei die Paketgröße. Somit erhalten wir daraufhin einen Plot, in dem an der x-Achse die Paketgrößen abgetragen sind und an der y-Achse die Anzahl an maximal möglichen Paketen pro Sekunde. Zusätzlich zu den abgebildeten Paketgrößen wurde eine Basismessung durchgeführt, bei der gar keine Last auf dem Load-Balancer wirkt (siehe Abbildung 7.2).
+Bei der Paketrate wird in Abhängigkeit von der Paketgröße gemessen, ob sich der maximale mögliche Paketdurchsatz ändert. Dieser Durchsatz wird hierbei in Paketen pro Sekunde gemessen. Die Variable, die verändert wird, ist hierbei die Paketgröße. Somit erhalten wir daraufhin einen Plot, in dem an der Abszisse die Paketgrößen abgetragen sind und an der Ordinate die Anzahl an maximal möglichen Paketen pro Sekunde. Zusätzlich zu den abgebildeten Paketgrößen wurde eine Basismessung durchgeführt, bei der gar keine Last auf dem Load-Balancer wirkt (siehe Abbildung 7.2).
 \subsection{Latenz}
-Bei der Latenzmessung wird der Laufzeitzuwachs durch die Verarbeitung des XenoFlow LoadBalancers gemessen. Die Messgröße ist hierbei eine Zeiteinheit in Millisekunden oder Mikrosekunden. Die Variable, die verändert wird, ist abermals die Paketgröße, um sicherzustellen, dass die Hardwarebeschleunigung tatsächlich auf der Ebene des Bitfeldes rechnet. Dazu wird in der Auswertung dann ein Plot erstellt, in dem Paketgröße und Latenzzuwachs abgetragen sind (siehe Abbildung 7.1).
+Bei der Latenzmessung wird der Laufzeitzuwachs durch die Verarbeitung des XenoFlow LoadBalancers gemessen. Die Messgröße ist hierbei eine Zeiteinheit in Millisekunden oder Mikrosekunden. Die Variable, die verändert wird, ist abermals die Paketgröße, um sicherzustellen, dass die Hardwarebeschleunigung tatsächlich auf der Ebene des Bitfeldes rechnet. Dazu wird in der Auswertung dann ein Plot erstellt, in dem Paketgröße und Latenzzuwachs aufgetragen sind (siehe Abbildung 7.1).
 \subsection{Packet Loss}
-Der Packet Loss misst, zu welchem Zeitpunkt und vor allem wie viele Pakete bei einer bestimmten Last auf dem LoadBalancer verloren gehen. Die gemessene Metrik ist hierbei ein Prozentsatz, der angibt, wie viel Anteilshaft vom tatsächlichen Traffic auch vom LoadBalancer verarbeitet werden kann. Die Variable, die hierbei variiert wird, ist die Last auf den Load-Balancer. Dabei wird die Anzahl der Pakete pro Sekunde variiert. In der Auswertung wird ähnlich wie bei der Latenz der Grundtraffic dem Packet Loss gegenübergestellt.
+Der Packet Loss misst, zu welchem Zeitpunkt und vor allem wie viele Pakete bei einer bestimmten Last auf dem LoadBalancer verloren gehen. Die gemessene Metrik ist hierbei ein Prozentsatz, der angibt, wie viel anteilshaft vom tatsächlichen Traffic auch vom LoadBalancer verarbeitet werden kann. Die Variable, die hierbei variiert wird, ist die Last auf den Load-Balancer. Dabei wird die Anzahl der Pakete pro Sekunde variiert. In der Auswertung wird ähnlich wie bei der Latenz der Grundtraffic dem Packet Loss gegenübergestellt.
 \section{Ergebnisse}
 Zunächst war das formulierte Ziel, eine vollständige Hardwarebeschleunigung seitens der BlueField-3 verwenden zu können, um den Traffic zu verarbeiten. Dies war leider zunächst so nicht möglich. Die ersten Versuche zeigten durch die sichtbare CPU-Last auf dem BlueField-System deutlich, dass der Netzwerkverkehr nicht vollständig über die Hardwareeinheiten geleitet wurde. Das war doch sehr verwunderlich, da in keinem uns bekannten Abschnitt der Dokumentation von einer speziellen Konfiguration oder Ähnlichem die Rede war, die diese Funktion aktiviert. Nach einer Weile und vielen Versuchen entstand allerdings die Idee, mittels Open vSwitch den Netzwerkverkehr derart umzuleiten, dass alle Pakete, die auf \textbf{Port 0} eintreffen, direkt auf \textbf{Port 1} weitergeleitet werden. Nachdem diese Konfiguration mittels des Open vSwitch CLI-Tools vorgenommen wurde, verschwand die Last auf den ARM-Kernen der BlueField sofort. Wurde nun der Lastverteiler gestartet, so war ebenfalls keine Last mehr auf den Kernen zu beobachten. Somit liegt die Vermutung nahe, dass nun der Netzwerkverkehr auf der ASIC-Hardware verarbeitet wurde. Außerdem werden so Mutmaßungen über die Architektur der BlueField-3 möglich. Es ist sehr wahrscheinlich, dass DOCA-Flow-Applikationen wirklich auf der ASIC-Hardware ausgeführt werden und somit ein Off-Path-Switching umsetzen, da weder auf Port-0 noch Port-1 auf dem Betriebssystem der BlueField-3 Pakete beobachtet werden können. 
 \subsection{Packet Rate}
@@ -69,15 +69,23 @@ Klar davon zu trennen ist die Tatsache, dass in dem gegebenen Messbett eine maxi
     \caption{Pakete pro Sekunde - verfügbare Bandbreite}
     \label{fig:enter-label}
 \end{figure}
-Bei Betrachtung von Abbildung 7.4, in der das Verhältnis zwischen der Paketgröße und der maximalen möglichen Bandbreite abgetragen ist, fällt sofort auf, dass die Erklärung seitens NVidia von angeblichen 400 Gbit/s so nicht nachgewiesen werden konnte. Dies ist vor allem der Tatsache geschuldet, dass in dieser Arbeit vor allem kleine Pakete gemessen wurden. Dennoch liegen die Messungen auch weit unter dem in dem gegebenen Testbed-Netzwerk. So können mit Paketgrößen von 64 Bytes, was eine sehr typische Paketgröße für DNS-Pakete ist, gerade einmal 16 Gbit/s erreicht werden. Dies ist in etwa 4 \% der beworbenen Leistung und somit weit unter der erwarteten Performance. Vergleichen wir allerdings die Leistung zu der eines gängigen Software-Lastverteilers wie Katran in der Arbeit von Phillip Ungrund, so sehen wir eine ungefähr doppelt so hohe Menge von maximalen Paketen pro Sekunde, die verarbeitet werden können \cite{ungrund} (Abbildung 7.5).
+Bei Betrachtung von Abbildung 7.4, in der das Verhältnis zwischen der Paketgröße und der maximalen möglichen Bandbreite abgetragen ist, fällt sofort auf, dass die Erklärung seitens NVidia von angeblichen 400 Gbit/s so nicht nachgewiesen werden konnte. Dies ist vor allem der Tatsache geschuldet, dass in dieser Arbeit vor allem kleine Pakete gemessen wurden. Dennoch liegen die Messungen auch weit unter dem in dem gegebenen Testbed-Netzwerk. So können mit Paketgrößen von 64 Bytes, was eine sehr typische Paketgröße für DNS-Pakete ist, gerade einmal 16 Gbit/s erreicht werden. Dies ist in etwa 4 \% der beworbenen Leistung und somit weit unter der erwarteten Performance. Vergleichen wir allerdings die Leistung zu der eines gängigen Software-Lastverteilers wie Katran in der Arbeit von Phillip Ungrund, so sehen wir eine ungefähr doppelt so hohe Menge von maximalen Paketen pro Sekunde, die verarbeitet werden können \cite{ungrund} (Abbildung 7.5). 
+
+In Abbildung 7.6 ist ein Vergleich zwischen den unterschiedlichen Lastverteilern hinsichtlich ihrer maximalen Pakete/Sekunde Verarbeitungs-Geschwindigkeit. Kakao Corporation ist ein südkoreanischer Cloud-Anbieter, der einen ähnlichen Ansatz verfolgt hat. Es wurde bei deren Versuch ein eBPF-Lastverteiler, ähnlich wie Katran, implementiert \cite{lee2021high}. Dazu wurden aus ihren Messungen zwei entnommen. Im Loopback-Versuch haben sie den eingehenden Traffic eins zu eins wieder ausgegeben und wollten so eine Baseline der maximal möglichen Leistung schaffen. Bei dem 255-Backends-Versuch gab es einen VIP-Server, auf dem die eigentliche Lastverteilung mittels eBPF stattfand. Beide Ansätze sind zwar langsamer als Katran, aber befinden sich bezüglich der maximalen Leistung nahe beieinander. XenoFlow jedoch kann mit einem Speed-Up von über zwei gemessen werden.
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{images/katran_performance.png}
     \caption{Katran Lastverteiler Leistung bei 254 Quell IP Adressen \cite{ungrund}}
     \label{fig:enter-label}
 \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{images/lb_comp.png}
+    \caption{Vergleich von unterschiedlichen Lastverteilern vs. XenoFlow \cite{lee2021high}\cite{ungrund}}
+    \label{fig:enter-label}
+\end{figure}
 \subsection{Latenz}
-Die Latenz wurde gemessen, indem zunächst eine Grundlast auf den Lastverteiler ausgeübt wurde. Nun wurde von fips-1 ein einzelner DNS-Request an den Lastverteiler geschickt, der diesen Request aufgrund seiner Source-IP an fips-2 weitergeleitet hat. Fips-2 hat daraufhin eine Antwort an fips-1 mit der IP gesendet. Auf fips-1 wurde dabei die Zeit gemessen, die das Paket für diesen kompletten Pfad gebraucht hat. Dieser Wert wird auch als Round-Trip-Time, kurz RTT, bezeichnet. In dieser Versuchsreihe wurde nun variiert, wie viel des Grundtraffics an die beiden Backends geschickt wird. Dies wird anhand der Source-IP-Felder gesteuert. Somit kann beobachtet werden, ob es Algorithmen gibt, die stochastisch den Traffic verteilen, oder, ob es tatsächlich eine Paketverarbeitung für jedes einzelne Paket gibt.
+Die Latenz wurde gemessen, indem zunächst eine Grundlast auf den Lastverteiler ausgeübt wurde. Nun wurde von fips-1 ein einzelner DNS-Request an den Lastverteiler geschickt, der diesen Request aufgrund seiner Source-IP an fips-2 weitergeleitet hat. Fips-2 hat daraufhin eine Antwort an fips-1 mit der IP gesendet. Auf fips-1 wurde dabei die Zeit gemessen, die das Paket für diesen kompletten Pfad gebraucht hat. Dieser Wert wird auch als Round-Trip-Time, kurz RTT, bezeichnet. In dieser Versuchsreihe wurde nun variiert, wie viel des Grundtraffics an die beiden Backends geschickt wird. Dies wird anhand der Source-IP-Felder gesteuert. Somit kann beobachtet werden, ob es Algorithmen gibt, die stochastisch den Traffic verteilen, oder ob es tatsächlich eine Paketverarbeitung für jedes einzelne Paket gibt.
 \subsubsection{Single Endpoint}
 \begin{figure}
     \centering
@@ -85,16 +93,16 @@ Die Latenz wurde gemessen, indem zunächst eine Grundlast auf den Lastverteiler 
     \caption{Latenzmessungen in unterschiedlichen Szenarien}
     \label{fig:enter-label}
 \end{figure}
-Bei dem Versuch aus Abbildung 7.6 wird die gesamte Grundlast an den gleichen Server weitergeleitet, auf dem auch der DNS-Server liegt. Hierbei ist der Latenzzuwachs vermutlich durch die Last auf dem Backendsystem zu begründen. Der DNS-Server muss sich mit den restlichen kernelinternen Prozessen um CPU-Zeit streiten, was sich in teilweise schlechteren Antwortzeiten bemerkbar macht. Allerdings ist der Latenzzuwachs sehr gering.
+Bei dem Versuch aus Abbildung 7.7 wird die gesamte Grundlast an den gleichen Server weitergeleitet, auf dem auch der DNS-Server liegt. Hierbei ist der Latenzzuwachs vermutlich durch die Last auf dem Backendsystem zu begründen. Der DNS-Server muss sich mit den restlichen kernelinternen Prozessen um CPU-Zeit streiten, was sich in teilweise schlechteren Antwortzeiten bemerkbar macht. Allerdings ist der Latenzzuwachs sehr gering.
 \subsubsection{50/50}
 
-Es ist in Abbildung 7.6 bei einer 50/50-Lastverteilung kein signifikanter Latenzzuwachs in Abhängigkeit von der Paketgröße zu erkennen.
+Es ist in Abbildung 7.7 bei einer 50/50-Lastverteilung kein signifikanter Latenzzuwachs in Abhängigkeit von der Basislast zu erkennen.
 \subsubsection{70/30}
 
-Es ist in Abbildung 7.6 bei einer 70/30-Lastverteilung kein signifikanter Latenzzuwachs in Abhängigkeit von der Paketgröße zu erkennen.
+Es ist in Abbildung 7.7 bei einer 70/30-Lastverteilung kein signifikanter Latenzzuwachs in Abhängigkeit von der Basislast zu erkennen.
 \subsubsection{Worstcase}
 Bei dem Versuch wird der komplette Netzwerkverkehr außer dem DNS-Request-Paket an das Backend ohne DNS-Server weitergeleitet. Gäbe es einen Zusammenhang mit dem Matching der Pakete und der entsprechenden Verteilung, so würde es bei diesem Versuch vermutlich am ehesten sichtbar werden.
-Es ist in Abbildung 7.6 kein signifikanter Latenzzuwachs in Abhängigkeit von der Paketgröße zu erkennen.
+Es ist in Abbildung 7.7 kein signifikanter Latenzzuwachs in Abhängigkeit von der Basislast zu erkennen.
 \subsection{Paketverlust}
 \begin{figure}
     \centering
@@ -102,4 +110,4 @@ Es ist in Abbildung 7.6 kein signifikanter Latenzzuwachs in Abhängigkeit von de
     \caption{Paketverlust vs. Pakete pro Sekunde Basislast}
     \label{fig:enter-label}
 \end{figure}
-In Abbildung 7.7 ist erwartungsgemäß ein lineares Wachstum des Paketverlustes ab der entsprechenden maximalen Verarbeitungsgeschwindigkeit von ca. 95 Millionen Paketen pro Sekunde zu beobachten. Für den entsprechenden Versuch wurden Pakete der Größe 64 Byte verwendet. Somit ist der Paketverlust direkt proportional zu dem im  Versuch der Bandbreite ermittelten maximalen Paketdurchsatz.
+In Abbildung 7.8 ist erwartungsgemäß ein lineares Wachstum des Paketverlustes ab der entsprechenden maximalen Verarbeitungsgeschwindigkeit von ca. 95 Millionen Paketen pro Sekunde zu beobachten. Für den entsprechenden Versuch wurden Pakete der Größe 64 Byte verwendet. Somit ist der Paketverlust direkt proportional zu dem im  Versuch der Bandbreite ermittelten maximalen Paketdurchsatz.
