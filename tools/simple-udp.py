@@ -10,7 +10,7 @@ dst_mac = "c4:70:bd:a0:56:ac" # bluefield
 src_mac = "08:c0:eb:a5:61:26"   # deine Quell-MAC
 
 # IP-Adressen und Ports
-src_ip = "192.168.1.10"
+src_ip = "1.2.3.4"
 dst_ip = "192.168.1.100"
 src_port = 12345
 dst_port = 53  # DNS-Port
